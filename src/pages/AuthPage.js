@@ -14,15 +14,16 @@ import {
 import { Visibility, VisibilityOff, Email, Lock } from "@mui/icons-material";
 import AuthPageStyles from "../styles/AuthePageStyles";
 import logoImage from "../assets/images/logoImage.jpg";
+import { useNavigate } from "react-router-dom";
 
 const AuthPage = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    confirmPassword: "",
   });
   const handleChange = (e) => {
     setFormData((prev) => {
@@ -31,13 +32,15 @@ const AuthPage = () => {
         [e.target.name]: e.target.value,
       };
     });
-    /*  if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }
-    ));
-    } */
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    localStorage.setItem("formData", JSON.stringify(formData));
+    localStorage.setItem("isLogin", true);
+    const isLogin = localStorage.getItem("isLogin");
+    if (isLogin) {
+      navigate("/", { replace: true });
+    }
   };
   return (
     <Box sx={AuthPageStyles.container}>
@@ -48,17 +51,12 @@ const AuthPage = () => {
         <CardHeader
           title={
             <Typography variant="h5" align="center" fontWeight="bold">
-              {isLogin ? "Sign In" : "Create Your Account"}
-            </Typography>
-          }
-          subheader={
-            <Typography variant="body2" align="center" color="text.secondary">
-              {isLogin ? "Sign in to continue" : "Start for Sign up "}
+              Admin Login
             </Typography>
           }
         />
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit}>
             <Box sx={{ mb: 2 }}>
               <TextField
                 fullWidth
@@ -75,8 +73,6 @@ const AuthPage = () => {
                     </InputAdornment>
                   ),
                 }}
-                // error={!!errors.email}
-                // helperText={errors.email}
               />
             </Box>
 
@@ -106,70 +102,17 @@ const AuthPage = () => {
                     </InputAdornment>
                   ),
                 }}
-                // error={!!errors.password}
-                // helperText={errors.password}
               />
             </Box>
-
-            {!isLogin && (
-              <Box sx={{ mb: 2 }}>
-                <TextField
-                  fullWidth
-                  label="Confirm Password"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirm your password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
-                          }
-                          edge="end"
-                        >
-                          {showConfirmPassword ? (
-                            <VisibilityOff />
-                          ) : (
-                            <Visibility />
-                          )}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  //   error={!!errors.confirmPassword}
-                  //   helperText={errors.confirmPassword}
-                />
-              </Box>
-            )}
-
             <Button
               fullWidth
               type="submit"
               variant="contained"
               sx={AuthPageStyles.button}
             >
-              {isLogin ? "Sign In" : "Sign Up"}
+              Login
             </Button>
           </form>
-          <Box sx={AuthPageStyles.bottomText}>
-            <Typography>
-              {isLogin ? "Need an account?" : "Already have an account?"}
-            </Typography>
-            <Typography
-              sx={AuthPageStyles.authButton}
-              onClick={() => setIsLogin(!isLogin)}
-            >
-              {isLogin ? "Sign up" : "Sign in"}
-            </Typography>
-          </Box>
         </CardContent>
       </Card>
     </Box>

@@ -6,8 +6,8 @@ const HomeStyle = {
     marginLeft: 0,
     marginRight: 0,
     padding: 0,
-    marginTop: 12,
-    // background: "red",
+    marginTop: 10,
+    background: "#e8f4fd",
     height: "88vh",
     width: "100vw",
     overflow: "hidden",
@@ -23,6 +23,9 @@ const HomeStyle = {
     height: "100%",
     flex: 1,
     overflowY: "auto",
+    "&::-webkit-scrollbar": {
+      display: "none",
+    },
     // border: "2px solid red",
   },
 };

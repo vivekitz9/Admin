@@ -15,7 +15,7 @@ const Home = () => {
         <Box sx={HomeStyle.rightContainer}>
           <Container
             sx={{
-              marginLeft: 12,
+              marginLeft: 0,
               marginRight: 0,
               width: "100%",
               position: "relative",

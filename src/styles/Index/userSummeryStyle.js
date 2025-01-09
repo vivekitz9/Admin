@@ -1,5 +1,3 @@
-import { Height } from "@mui/icons-material";
-
 const userSummeryStyle = {
   cardContainer: {
     display: "flex",

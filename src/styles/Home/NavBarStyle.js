@@ -9,6 +9,7 @@ const NavBarStyle = {
     position: "fixed",
     top: 0,
     zIndex: 1,
+    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
   },
   navContainer: {
     display: "flex",

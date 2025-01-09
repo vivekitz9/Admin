@@ -11,9 +11,10 @@ import {
   Navigate,
   Route,
 } from "react-router-dom";
+import Gallery from "./components/Gallery/Gallery";
 
 const ProtectedRoute = ({ children }) => {
-  const isLogin = true;
+  const isLogin = localStorage.getItem("isLogin");
   if (isLogin) {
     return children;
   } else {
@@ -36,6 +37,8 @@ const router = createBrowserRouter(
         <Route path="mission-vision" />
         <Route path="events" element={<Event />} />
         <Route path="blogs" element={<Blogs />} />
+        <Route path="gallery" element={<Gallery />} />
+
         {/* <Route path="*" element={<ErrorPage />} /> */}
       </Route>
       <Route path="*" element={<ErrorPage />} />
