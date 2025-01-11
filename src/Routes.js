@@ -1,5 +1,5 @@
 import Blogs from "./components/Blogs/Blogs";
-import Event from "./components/Event/Event";
+
 import Index from "./components/Index/Index";
 import AuthPage from "./pages/AuthPage";
 import Home from "./pages/Home/Home";
@@ -11,6 +11,7 @@ import {
   Navigate,
   Route,
 } from "react-router-dom";
+import Event from "./pages/Event/Event";
 
 const ProtectedRoute = ({ children }) => {
   const isLogin = localStorage.getItem("isLogin");
