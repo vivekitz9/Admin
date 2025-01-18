@@ -12,22 +12,17 @@ import {
   Avatar,
 } from "@mui/material";
 import { CloudUploadIcon } from "../../assets/icons/icons";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import eventStyle from "../../styles/Event/event";
+import bannerStyle from "../../styles/Banner/banner";
 
-const AddEvent = () => {
+const AddBanner = () => {
   const [formData, setFormData] = useState({
     image: "",
-    date: null,
     title: "",
     description: "",
   });
   const [errors, setErrors] = useState({
     title: false,
     description: false,
-    date: false,
   });
   const [image, setImage] = useState(null);
   const handleInputChange = (e) => {
@@ -48,15 +43,11 @@ const AddEvent = () => {
     //   reader.readAsDataURL(file);
     // }
   };
-  const handleDateChange = (date) => {
-    setFormData((prev) => ({ ...prev, date }));
-  };
 
   const validateForm = () => {
     const newErrors = {
       title: formData.title.trim() === "",
       description: formData.description.trim() === "",
-      date: formData.date === null,
     };
     setErrors(newErrors);
 
@@ -72,58 +63,23 @@ const AddEvent = () => {
   };
 
   return (
-    <Box component={Paper} sx={{ ...eventStyle.formContainer, p: 3 }}>
-      <Typography variant="h5" sx={eventStyle.heading}>
-        Add Event
+    <Box component={Paper} sx={bannerStyle.formContainer}>
+      <Typography variant="h5" sx={bannerStyle.heading}>
+        Add Banner
       </Typography>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 3,
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", md: "row" },
-            gap: 3,
-          }}
-        >
-          <Box sx={{ flex: 1 }}>
-            <TextField
-              label="Title"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              fullWidth
-              error={errors.title}
-              helperText={errors.title ? "Title is required." : ""}
-              /* sx={} */
-            />
-          </Box>
-          <Box sx={{ flex: 1 }}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                label="Select Date"
-                value={formData.date}
-                onChange={handleDateChange}
-                slots={{
-                  textField: (props) => <TextField {...props} fullWidth />,
-                }}
-
-                /* sx={} */
-              />
-            </LocalizationProvider>
-          </Box>
+      <Box sx={bannerStyle.formContent}>
+        <Box sx={{ flex: 1 }}>
+          <TextField
+            label="Title"
+            name="title"
+            value={formData.title}
+            onChange={handleInputChange}
+            fullWidth
+            error={errors.title}
+            helperText={errors.title ? "Title is required." : ""}
+          />
         </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", md: "row" },
-            gap: 3,
-          }}
-        >
+        <Box sx={bannerStyle.rightContainer}>
           <Box sx={{ flex: 1 }}>
             <TextField
               label="Description"
@@ -141,13 +97,7 @@ const AddEvent = () => {
           <Box sx={{ flex: 1 }}>
             <Box sx={{}}>
               <Card>
-                <CardContent
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
+                <CardContent sx={bannerStyle.cardContant}>
                   {image ? (
                     <Avatar
                       sx={{
@@ -169,14 +119,7 @@ const AddEvent = () => {
                     />
                   )}
                 </CardContent>
-                <CardActions
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    paddingBottom: 2,
-                  }}
-                >
+                <CardActions sx={bannerStyle.cardAction}>
                   <Fab variant="extended" component="label" color="secondary">
                     <CloudUploadIcon sx={{ mr: 1 }} />
                     Upload files
@@ -203,4 +146,4 @@ const AddEvent = () => {
     </Box>
   );
 };
-export default AddEvent;
+export default AddBanner;

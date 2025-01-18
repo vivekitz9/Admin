@@ -1,3 +1,4 @@
+import AddBanner from "../../components/Banner/AddBanner";
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -12,22 +13,22 @@ import {
   Fab,
   Avatar,
   Switch,
+  Divider,
 } from "@mui/material";
 
 import eventStyle from "../../styles/Event/event";
-import AddEvent from "../../components/Events/AddEvent";
 import EditIcon from "@mui/icons-material/Edit";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import Model from "../../components/Model";
 import { Link } from "react-router-dom";
 
-const Event = () => {
+const Banner = () => {
   const [isConfirm, setConfirm] = useState(false);
   const [open, setOpen] = useState(false);
   const [tableData, setTableData] = useState([
-    /* {
+    {
       id: 1,
-      title: "first event",
+      title: "banner1",
       description: "campion for bihar",
       date: "15-01-2025",
       image: "",
@@ -35,7 +36,7 @@ const Event = () => {
     },
     {
       id: 2,
-      title: "second event",
+      title: "banner2",
       description: "campion for bihar",
       date: "15-01-2025",
       image: "",
@@ -43,20 +44,12 @@ const Event = () => {
     },
     {
       id: 3,
-      title: "third event",
+      title: "banner3",
       description: "campion for bihar",
       date: "15-01-2025",
       image: "",
       active: 0,
     },
-    {
-      id: 4,
-      title: "four event",
-      description: "campion for bihar",
-      date: "15-01-2025",
-      image: "",
-      active: 0,
-    },*/
   ]);
   useEffect(() => {
     // call api for table data
@@ -89,16 +82,15 @@ const Event = () => {
   };
   return (
     <Box sx={eventStyle.mainContianer}>
-      {/* <AddEvent /> */}
       <Model
         handleConfirm={handleConfirm}
         handleCloseModel={handleCloseModel}
         open={open}
       />
       {tableData.length === 0 ? (
-        <AddEvent />
+        <AddBanner />
       ) : (
-        <Link to={"add-event"}>
+        <Link to={"add-banner"}>
           <Fab
             variant="extended"
             size="medium"
@@ -106,12 +98,16 @@ const Event = () => {
             sx={{ marginBottom: "10px" }}
           >
             <AddBoxIcon sx={{ mr: 1 }} />
-            Add Event
+            Add Banner
           </Fab>
         </Link>
       )}
       {tableData.length !== 0 && (
         <TableContainer component={Paper}>
+          <Typography variant="h5" sx={{ p: 3 }}>
+            Banner List
+          </Typography>
+          <Divider textAlign="left" />
           <Table>
             <TableHead>
               <TableRow>
@@ -119,7 +115,6 @@ const Event = () => {
                   <Typography>Title</Typography>
                 </TableCell>
                 <TableCell>Description</TableCell>
-                <TableCell>Date </TableCell>
                 <TableCell>Image</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Action</TableCell>
@@ -130,7 +125,6 @@ const Event = () => {
                 <TableRow key={data.id}>
                   <TableCell>{data.title}</TableCell>
                   <TableCell>{data.description}</TableCell>
-                  <TableCell>{data.date}</TableCell>
                   <TableCell>
                     <Avatar
                       variant="square"
@@ -167,4 +161,4 @@ const Event = () => {
   );
 };
 
-export default Event;
+export default Banner;

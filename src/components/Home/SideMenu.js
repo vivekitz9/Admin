@@ -35,6 +35,7 @@ const SideMenu = () => {
     { text: "Mission & Vision", icon: <GoalIcon />, path: "mission-vision" },
     { text: "Member", icon: <PeopleIcon />, path: "member" },
     { text: "Events", icon: <EventIcon />, path: "events" },
+    { text: "Add Banner", icon: <EventIcon />, path: "banner" },
     { text: "Gallery", icon: <PhotoLibraryIcon />, path: "gallery" },
     { text: "Blogs", icon: <ArticleIcon />, path: "blogs" },
     { text: "News", icon: <AnnouncementIcon />, path: "news" },
