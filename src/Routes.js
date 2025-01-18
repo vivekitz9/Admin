@@ -4,7 +4,7 @@ import Index from "./components/Index/Index";
 import AuthPage from "./pages/AuthPage";
 import Home from "./pages/Home/Home";
 import ErrorPage from "./pages/ErrorPage/ErrorPage";
-
+import AddEvent from "./components/Events/AddEvent";
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -37,6 +37,7 @@ const router = createBrowserRouter(
         <Route path="mission-vision" />
         <Route path="events" element={<Event />} />
         <Route path="blogs" element={<Blogs />} />
+        <Route path="events/add-event" element={<AddEvent />} />
 
         {/* <Route path="*" element={<ErrorPage />} /> */}
       </Route>

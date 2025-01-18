@@ -3,6 +3,7 @@ const eventStyle = {
     pt: 4,
   },
   formContainer: {
+    mt: 3,
     p: 3,
     mb: 4,
   },

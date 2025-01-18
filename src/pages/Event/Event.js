@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -16,170 +16,153 @@ import {
   CardContent,
   CardActions,
   Avatar,
+  Switch,
 } from "@mui/material";
-import { CloudUploadIcon } from "../../assets/icons/icons";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+
 import eventStyle from "../../styles/Event/event";
+import AddEvent from "../../components/Events/AddEvent";
+import EditIcon from "@mui/icons-material/Edit";
+import AddBoxIcon from "@mui/icons-material/AddBox";
+import Model from "../../components/Model";
+import { Link } from "react-router-dom";
 
 const Event = () => {
-  const [formData, setFormData] = useState({
-    image: "",
-    date: null,
-    title: "",
-    description: "",
-  });
-  const [image, setImage] = useState(null);
-  const [tableData, setTableData] = useState([]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const [isConfirm, setConfirm] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [tableData, setTableData] = useState([
+    /* {
+      id: 1,
+      title: "first event",
+      description: "campion for bihar",
+      date: "15-01-2025",
+      image: "",
+      active: 0,
+    },
+    {
+      id: 2,
+      title: "second event",
+      description: "campion for bihar",
+      date: "15-01-2025",
+      image: "",
+      active: 0,
+    },
+    {
+      id: 3,
+      title: "third event",
+      description: "campion for bihar",
+      date: "15-01-2025",
+      image: "",
+      active: 0,
+    },
+    {
+      id: 4,
+      title: "four event",
+      description: "campion for bihar",
+      date: "15-01-2025",
+      image: "",
+      active: 0,
+    },*/
+  ]);
+  useEffect(() => {
+    // call api for table data
+    console.log("call api for table data");
+  }, [isConfirm]);
+  const handleActive = async (id, active) => {
+    //call api for active
+    console.log("handleactive api");
+    let response = true;
+    // this is for test
+    if (response) {
+      setTableData((prev) =>
+        prev.map((item) => {
+          return item.id === id ? { ...item, active: !active } : item;
+        })
+      );
+    }
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setFormData((prev) => ({ ...prev, image: URL.createObjectURL(file) }));
-    setImage(URL.createObjectURL(file));
-    // if (file) {
-    //   const reader = new FileReader();
-    //   reader.onload = () => {
-    //     setFormData((prev) => ({ ...prev, image: reader.result }));
-    //     setImage(reader.result);
-    //   };
-    //   reader.readAsDataURL(file);
-    // }
+  const handleOpenModel = () => {
+    setOpen(true);
+  };
+  const handleCloseModel = () => {
+    setOpen(false);
   };
 
-  const handleDateChange = (date) => {
-    setFormData((prev) => ({ ...prev, date }));
+  const handleConfirm = async () => {
+    setConfirm(true);
+    handleCloseModel();
   };
-
-  const handleSave = () => {
-    setTableData((prev) => [...prev, formData]);
-    // setFormData({ image: "", date: null, title: "", description: "" });
-  };
-
   return (
     <Box sx={eventStyle.mainContianer}>
-      <Box component={Paper} sx={eventStyle.formContainer}>
-        <Typography variant="h5" sx={eventStyle.heading}>
-          Add Event
-        </Typography>
-        <Box sx={eventStyle.formContent} component="form">
-          <TextField
-            label="Title"
-            name="title"
-            value={formData.title}
-            onChange={handleInputChange}
-            fullWidth
-            sx={eventStyle.title}
-          />
-
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label="Select Date"
-              value={formData.date}
-              onChange={handleDateChange}
-              renderInput={(params) => <TextField {...params} fullWidth />}
-              sx={eventStyle.date}
-            />
-          </LocalizationProvider>
-
-          <TextField
-            label="Description"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            multiline
-            rows={5}
-            fullWidth
-            sx={eventStyle.description}
-          />
-        </Box>
-        <Box sx={eventStyle.imageContainer}>
-          <Card>
-            <CardContent
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                // backgroundColor: false ? "transparent" : "lightgray",
-              }}
-            >
-              {image ? (
-                <Avatar
-                  sx={{
-                    width: 120,
-                    height: 120,
-                    backgroundColor: "transparent",
-                  }}
-                  src={image}
-                  alt="Uploaded Image"
-                />
-              ) : (
-                <Avatar
-                  sx={{ width: 120, height: 120, backgroundColor: "lightgray" }}
-                  src={image}
-                />
-              )}
-            </CardContent>
-            <CardActions>
-              <Fab variant="extended" component="label" color="secondary">
-                <CloudUploadIcon sx={{ mr: 1 }} />
-                Upload files
-                <TextField
-                  type="file"
-                  onChange={handleImageChange}
-                  // inputProps={{ accept: "image/*" }}
-                  multiple
-                  sx={{ display: "none" }}
-                />
-              </Fab>
-            </CardActions>
-          </Card>
-        </Box>
-
-        <Box sx={{ textAlign: "center", mt: 4 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSave}
-            disabled={
-              !formData.title || !formData.description || !formData.date
-            }
-          >
-            Save
-          </Button>
-        </Box>
-      </Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Image</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Title</TableCell>
-              <TableCell>Description</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {tableData.map((row, index) => (
-              <TableRow key={index}>
+      {/* <AddEvent /> */}
+      <Model
+        handleConfirm={handleConfirm}
+        handleCloseModel={handleCloseModel}
+        open={open}
+      />
+      {tableData.length == 0 ? (
+        <AddEvent />
+      ) : (
+        <Link to={"add-event"}>
+          <Fab variant="extended" size="medium" color="primary">
+            <AddBoxIcon sx={{ mr: 1 }} />
+            Add Event
+          </Fab>
+        </Link>
+      )}
+      {tableData.length != 0 && (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
                 <TableCell>
-                  {row.image && (
-                    <img src={row.image} alt="Uploaded" width={50} />
-                  )}
+                  <Typography>Title</Typography>
                 </TableCell>
-                <TableCell>{row.date?.format("YYYY-MM-DD")}</TableCell>
-                <TableCell>{row.title}</TableCell>
-                <TableCell>{row.description}</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Date </TableCell>
+                <TableCell>Image</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Action</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {tableData.map((data) => (
+                <TableRow key={data.id}>
+                  <TableCell>{data.title}</TableCell>
+                  <TableCell>{data.description}</TableCell>
+                  <TableCell>{data.date}</TableCell>
+                  <TableCell>
+                    <Avatar
+                      variant="square"
+                      // src={data.image}
+                      sx={{
+                        width: 120,
+                        height: 120,
+                        borderRadius: "0.3rem",
+                      }}
+                      alt="event image"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Switch
+                      color="secondary"
+                      checked={data.active}
+                      onChange={() => handleActive(data.id, data.active)}
+                      onClick={handleOpenModel}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Fab size="small" variant="extended" component="label">
+                      <EditIcon sx={{ mr: 1 }} />
+                      <Typography> Edit</Typography>
+                    </Fab>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </Box>
   );
 };

@@ -27,6 +27,7 @@ import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import EditIcon from "@mui/icons-material/Edit";
 
 export {
   HomeIcon,
@@ -57,4 +58,5 @@ export {
   Logout,
   AddCircleIcon,
   CloudUploadIcon,
+  EditIcon,
 };
