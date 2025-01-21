@@ -41,6 +41,7 @@ const SideMenuStyle = {
   },
   avatar: {
     background: "#800000",
+    color: "white",
   },
 };
 export default SideMenuStyle;

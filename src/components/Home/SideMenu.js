@@ -38,7 +38,7 @@ const SideMenu = () => {
     { text: "Gallery", icon: <PhotoLibraryIcon />, path: "gallery" },
     { text: "Blogs", icon: <ArticleIcon />, path: "blogs" },
     { text: "News", icon: <AnnouncementIcon />, path: "news" },
-    { text: "Write to Me", icon: <MailIcon />, path: "write-to-me" },
+    { text: "Connect with Me", icon: <MailIcon />, path: "write-to-me" },
     { text: "Help & Support", icon: <HelpIcon />, path: "help-support" },
     { text: "Privacy Policy", icon: <LockIcon />, path: "pravacy-policy" },
     { text: "Terms & Conditions", icon: <GavelIcon />, path: "term-condition" },

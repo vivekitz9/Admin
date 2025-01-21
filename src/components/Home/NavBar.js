@@ -69,7 +69,8 @@ const NavBar = () => {
           disablePortal
         >
           <MenuItem onClick={handleClose}>
-            <Avatar /> Profile
+            <Avatar />
+            Profile
           </MenuItem>
           <MenuItem onClick={handleClose}>
             <Avatar /> My account
