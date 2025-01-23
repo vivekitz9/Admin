@@ -22,9 +22,14 @@ import {
   ExitToAppIcon,
 } from "../../assets/icons/icons";
 import SideMenuStyle from "../../styles/Home/SideMenuStyle";
-import { Link, NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const SideMenu = () => {
+  const navigate = useNavigate();
+  const logout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
   const navItems = [
     { text: "Home", icon: <HomeIcon />, path: "/" },
     { text: "Mission & Vision", icon: <GoalIcon />, path: "mission-vision" },
@@ -33,11 +38,15 @@ const SideMenu = () => {
     { text: "Gallery", icon: <PhotoLibraryIcon />, path: "gallery" },
     { text: "Blogs", icon: <ArticleIcon />, path: "blogs" },
     { text: "News", icon: <AnnouncementIcon />, path: "news" },
-    { text: "Write to Me", icon: <MailIcon />, path: "write-to-me" },
+    { text: "Connect with Me", icon: <MailIcon />, path: "write-to-me" },
     { text: "Help & Support", icon: <HelpIcon />, path: "help-support" },
     { text: "Privacy Policy", icon: <LockIcon />, path: "pravacy-policy" },
     { text: "Terms & Conditions", icon: <GavelIcon />, path: "term-condition" },
-    { text: "Log Out", icon: <ExitToAppIcon />, path: "login" },
+    {
+      text: "Log Out",
+      icon: <ExitToAppIcon />,
+      action: logout,
+    },
   ];
   return (
     <Box sx={SideMenuStyle.sidemenuContainer}>
@@ -45,34 +54,27 @@ const SideMenu = () => {
         {navItems.map((item, index) => (
           <ListItem
             key={index}
-            component={NavLink}
-            to={item.path}
-            style={({ isActive }) => ({
-              textDecoration: "none",
-              color: "inherit",
-              display: "flex",
-              alignItems: "center",
-              width: "100%",
-              background: isActive ? "#ef9a9a" : "#FFD6D6",
-            })}
+            component={item.path ? NavLink : ""}
+            to={item.path ? item.path : undefined}
+            onClick={item.action ? item.action : undefined}
+            style={
+              item.path
+                ? ({ isActive }) => ({
+                    textDecoration: "none",
+                    color: "inherit",
+                    display: "flex",
+                    alignItems: "center",
+                    width: "100%",
+                    background: isActive ? "#ef9a9a" : "#FFD6D6",
+                  })
+                : {}
+            }
             sx={SideMenuStyle.listItem}
           >
-            {/* <NavLink
-              to={item.path}
-              style={({ isActive }) => ({
-                textDecoration: "none",
-                color: "inherit",
-                background: isActive ? "#ef9a9a" : "",
-                display: "flex",
-                alignItems: "center",
-                width: "110%",
-              })}
-            > */}
             <ListItemAvatar>
               <Avatar sx={SideMenuStyle.avatar}>{item.icon}</Avatar>
             </ListItemAvatar>
             <ListItemText primary={item.text} />
-            {/* </NavLink> */}
           </ListItem>
         ))}
       </List>
