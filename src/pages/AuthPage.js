@@ -15,16 +15,21 @@ import { Visibility, VisibilityOff, Email, Lock } from "@mui/icons-material";
 import AuthPageStyles from "../styles/AuthePageStyles";
 import logoImage from "../assets/images/logoImage.jpg";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { loginUser } from "../redux/middleware/middleware";
 
 const AuthPage = () => {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
 
+  const dispatch = useDispatch();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
   const handleChange = (e) => {
     setFormData((prev) => {
       return {
@@ -33,6 +38,7 @@ const AuthPage = () => {
       };
     });
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     localStorage.setItem("formData", JSON.stringify(formData));
@@ -40,8 +46,10 @@ const AuthPage = () => {
     const isLogin = localStorage.getItem("isLogin");
     if (isLogin) {
       navigate("/", { replace: true });
+      dispatch(loginUser(formData));
     }
   };
+
   return (
     <Box sx={AuthPageStyles.container}>
       <Card sx={AuthPageStyles.card}>
