@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 import {
   HomeIcon,
-  //   InfoIcon,
   GoalIcon,
   PeopleIcon,
   EventIcon,

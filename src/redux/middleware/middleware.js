@@ -11,7 +11,7 @@ export const loginUser = (formData) => {
 
     try {
       const response = await axios.post(
-        "https://api.example.com/login",
+        "http://shivdeeplande.com:8001/api/v1/admin/login",
         formData,
         {
           headers: { "Content-Type": "application/json" },

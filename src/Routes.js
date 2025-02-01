@@ -16,10 +16,12 @@ import Member from "./pages/Member/Member";
 import News from "./pages/News/News";
 import MissionAndVision from "./pages/Mission-Vision/MissionAndVision";
 import ConnectWithMe from "./pages/ConnectWithMe/ConnectWithMe";
+import { useSelector } from "react-redux";
 
 const ProtectedRoute = ({ children }) => {
-  const isLogin = localStorage.getItem("isLogin");
-  if (isLogin) {
+  const user = useSelector((store) => store.auth);
+  // const isLogin = localStorage.getItem("isLogin");
+  if (user?.user?.success) {
     return children;
   } else {
     return <Navigate to="/login" replace />;
