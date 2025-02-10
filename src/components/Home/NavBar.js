@@ -20,8 +20,14 @@ const NavBar = () => {
   const handleOpen = (event) => {
     setOpenClose(event.currentTarget);
   };
+
   const handleClose = () => {
     setOpenClose(null);
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.href = "/login";
   };
 
   return (
@@ -87,7 +93,7 @@ const NavBar = () => {
             </ListItemIcon>
             Settings
           </MenuItem>
-          <MenuItem onClick={handleClose}>
+          <MenuItem onClick={handleLogout}>
             <ListItemIcon>
               <Logout />
             </ListItemIcon>
@@ -98,4 +104,5 @@ const NavBar = () => {
     </Box>
   );
 };
+
 export default NavBar;

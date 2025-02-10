@@ -22,15 +22,12 @@ import { toast } from "sonner";
 const AuthPage = () => {
   const navigate = useNavigate();
   const user = useSelector((store) => store.auth);
-  // console.log(user);
 
   const [showPassword, setShowPassword] = useState(false);
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    console.log(user?.user?.message);
-    console.log(user?.user?.data?.token);
     if (user?.user?.success) {
       navigate("/", { replace: true });
       toast("Welcome to Home");
@@ -135,4 +132,5 @@ const AuthPage = () => {
     </Box>
   );
 };
+
 export default AuthPage;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -16,36 +16,63 @@ import {
   Paper,
   IconButton,
   Switch,
+  TablePagination,
 } from "@mui/material";
-import { Edit } from "@mui/icons-material";
+import { Edit, Token } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { useSelector } from "react-redux";
+import axios from "axios";
+
+const GETAPI = "http://shivdeeplande.com:8001/api/v1/blogs";
+const POSTAPI = "http://shivdeeplande.com:8001/api/v1/blogs";
 
 const Blogs = () => {
   const [blogs, setBlogs] = useState([]);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [newBlog, setNewBlog] = useState({
     title: "",
-    description: "",
+    content: "",
     file: null,
   });
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editData, setEditData] = useState({
     title: "",
-    description: "",
+    content: "",
     file: null,
   });
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
+  // For Pagination
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const user = useSelector((store) => store.auth);
+  const token = user?.user?.data?.token;
+
+  const fetchAllBlogs = async () => {
+    try {
+      const response = await axios.get(GETAPI, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setBlogs(response.data.data || []); // Extract users from API response
+    } catch (err) {
+      console.log(err.response?.data?.message);
+    }
+  };
+
   // Handle Modal Close
   const closeUploadModal = () => {
     setUploadModalOpen(false);
-    setNewBlog({ title: "", description: "", file: null });
+    setNewBlog({ title: "", content: "", file: null });
   };
 
   const closeEditModal = () => {
     setEditModalOpen(false);
-    setEditData({ title: "", description: "", file: null });
+    setEditData({ title: "", content: "", file: null });
     setSelectedBlog(null);
   };
 
@@ -61,19 +88,61 @@ const Blogs = () => {
   };
 
   // Handle Post Blog
-  const handlePostBlog = () => {
-    if (newBlog.title && newBlog.description && newBlog.file) {
-      const imageURL = URL.createObjectURL(newBlog.file);
-      setBlogs([
-        {
-          title: newBlog.title,
-          description: newBlog.description,
-          image: imageURL,
-          isActive: false,
-        },
-        ...blogs,
-      ]);
-      closeUploadModal();
+  // const handlePostBlog = () => {
+  //   if (newBlog.title && newBlog.content && newBlog.file) {
+  //     const imageURL = URL.createObjectURL(newBlog.file);
+  //     setBlogs([
+  //       {
+  //         title: newBlog.title,
+  //         content: newBlog.content,
+  //         image: imageURL,
+  //         isActive: false,
+  //       },
+  //       ...blogs,
+  //     ]);
+  //     closeUploadModal();
+  //   }
+
+  // };
+
+  const handlePostBlog = async () => {
+    console.log("New Blog Data  :  ", newBlog);
+    if (newBlog.title && newBlog.content && newBlog.file) {
+      const formData = new FormData();
+      formData.append("title", newBlog.title);
+      formData.append("content", newBlog.content);
+      if (newBlog.file) {
+        formData.append("file", newBlog.file);
+      }
+
+      console.log("Form Data   :  ", formData);
+
+      try {
+        const response = await axios.post(POSTAPI, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        console.log("Response  :  ", response);
+
+        if (response.status === 200) {
+          // setBlogs([
+          //   {
+          //     title: response.data.title,
+          //     content: response.data.content,
+          //     image: response.data.imageURL, // Assuming API returns the image URL
+          //     isActive: false,
+          //   },
+          //   ...blogs,
+          // ]);
+          fetchAllBlogs();
+          closeUploadModal();
+        }
+      } catch (error) {
+        console.error("Error posting blog:", error);
+      }
     }
   };
 
@@ -82,7 +151,7 @@ const Blogs = () => {
     console.log(blog);
     setEditData({
       title: blog.title,
-      description: blog.description,
+      content: blog.content,
       file: null,
     });
     setSelectedBlog(blog);
@@ -96,7 +165,7 @@ const Blogs = () => {
         ? {
             ...blog,
             title: editData.title,
-            description: editData.description,
+            content: editData.content,
             image: editData.file
               ? URL.createObjectURL(editData.file)
               : blog.image,
@@ -126,31 +195,49 @@ const Blogs = () => {
     setBlogs(updatedBlogs);
   };
 
+  // Handle Pagination
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchAllBlogs();
+    }
+  }, [Blogs]);
+
   return (
     <Box sx={{ padding: 2 }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography
-          variant="h4"
-          gutterBottom
-          sx={{ textAlign: "center", marginBottom: 2 }}
-        >
-          Manage Blogs
-        </Typography>
-
-        {/* Blog Upload Button */}
-        <Box sx={{ textAlign: "center", marginBottom: 3 }}>
-          <Button
-            variant="contained"
-            sx={{ backgroundColor: "#800000" }}
-            onClick={() => setUploadModalOpen(true)}
-            startIcon={<CloudUploadIcon />}
+      <Box>
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Typography
+            variant="h4"
+            gutterBottom
+            sx={{ textAlign: "center", marginBottom: 2 }}
           >
-            Add Blog
-          </Button>
-        </Box>
-      </Box>
+            Manage Blogs
+          </Typography>
 
-      <hr color="#800000" style={{ marginTop: "-8px" }} />
+          {/* Blog Upload Button */}
+          <Box sx={{ textAlign: "center", marginBottom: 3 }}>
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: "#800000" }}
+              onClick={() => setUploadModalOpen(true)}
+              startIcon={<CloudUploadIcon />}
+            >
+              Add Blog
+            </Button>
+          </Box>
+        </Box>
+        <hr color="#800000" style={{ marginTop: "-8px" }} />
+      </Box>
 
       {/* Table View */}
       {blogs.length === 0 ? (
@@ -172,55 +259,67 @@ const Blogs = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {blogs.map((blog, index) => (
-                <TableRow key={index}>
-                  <TableCell>{blog.title}</TableCell>
-                  <TableCell>
-                    <img
-                      src={blog.image}
-                      alt={blog.title}
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "10px",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={blog.isActive}
-                      onChange={() => toggleActiveStatus(blog)}
-                      color="primary"
-                    />
-                    {blog.isActive ? "Active" : "Inactive"}
-                  </TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => handleEdit(blog)}>
+              {blogs
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((blog, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{blog.title}</TableCell>
+                    <TableCell>
+                      <img
+                        src={blog.image}
+                        alt={blog.title}
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          borderRadius: "10px",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={blog.isActive}
+                        onChange={() => toggleActiveStatus(blog)}
+                        color="primary"
+                      />
+                      {blog.isActive ? "Active" : "Inactive"}
+                    </TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => handleEdit(blog)}>
+                        <Button
+                          variant="contained"
+                          sx={{ backgroundColor: "#800000" }}
+                          startIcon={<Edit />}
+                          onClick={() => {
+                            handleEdit(blog);
+                            closeViewModal();
+                          }}
+                        >
+                          Edit
+                        </Button>
+                      </IconButton>
                       <Button
                         variant="contained"
-                        sx={{ backgroundColor: "#800000" }}
-                        startIcon={<Edit />}
-                        onClick={() => {
-                          handleEdit(blog);
-                          closeViewModal();
-                        }}
+                        sx={{ marginLeft: 1 }}
+                        onClick={() => handleView(blog)}
                       >
-                        Edit
+                        View
                       </Button>
-                    </IconButton>
-                    <Button
-                      variant="contained"
-                      sx={{ marginLeft: 1 }}
-                      onClick={() => handleView(blog)}
-                    >
-                      View
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
+          {/* Pagination */}
+          <TablePagination
+            rowsPerPageOptions={[10, 20, 30]}
+            component="div"
+            count={blogs.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
         </TableContainer>
       )}
 
@@ -247,9 +346,9 @@ const Blogs = () => {
           <TextField
             fullWidth
             label="Blog Description"
-            value={newBlog.description}
+            value={newBlog.content}
             onChange={(e) =>
-              setNewBlog((prev) => ({ ...prev, description: e.target.value }))
+              setNewBlog((prev) => ({ ...prev, content: e.target.value }))
             }
             multiline
             rows={7}
@@ -274,9 +373,7 @@ const Blogs = () => {
             onClick={handlePostBlog}
             sx={{ backgroundColor: "#800000" }}
             disabled={
-              !newBlog.title.trim() ||
-              !newBlog.description.trim() ||
-              !newBlog.file
+              !newBlog.title.trim() || !newBlog.content.trim() || !newBlog.file
             }
           >
             Post
@@ -307,9 +404,9 @@ const Blogs = () => {
           <TextField
             fullWidth
             label="Blog Description"
-            value={editData.description}
+            value={editData.content}
             onChange={(e) =>
-              setEditData((prev) => ({ ...prev, description: e.target.value }))
+              setEditData((prev) => ({ ...prev, content: e.target.value }))
             }
             multiline
             rows={7}
@@ -335,7 +432,7 @@ const Blogs = () => {
             variant="contained"
             onClick={handleSaveEdit}
             sx={{ backgroundColor: "#800000" }}
-            disabled={!editData.title.trim() || !editData.description.trim()}
+            disabled={!editData.title.trim() || !editData.content.trim()}
           >
             Save
           </Button>
@@ -350,7 +447,7 @@ const Blogs = () => {
         fullWidth
       >
         <DialogContent>
-          <Typography variant="h4" gutterBottom sx={{ color: "red" }}>
+          <Typography variant="h4" gutterBottom>
             {selectedBlog?.title}
           </Typography>
           <img
@@ -364,7 +461,7 @@ const Blogs = () => {
             }}
           />
           <Typography variant="body1" sx={{ marginTop: 2 }}>
-            {selectedBlog?.description}
+            {selectedBlog?.content}
           </Typography>
         </DialogContent>
         <DialogActions>

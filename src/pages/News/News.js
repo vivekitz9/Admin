@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -16,9 +16,17 @@ import {
   Paper,
   IconButton,
   Switch,
+  TablePagination,
 } from "@mui/material";
 import { Edit } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { useSelector } from "react-redux";
+import axios from "axios";
+
+const GETAPI = "http://shivdeeplande.com:8001/api/v1/news";
+const POSTAPI = "http://shivdeeplande.com:8001/api/v1/news";
+// const PUTAPI = "http://shivdeeplande.com:8001";
+// const DELETEAPI = "http://shivdeeplande.com:8001";
 
 const News = () => {
   const [newsList, setNewsList] = useState([]);
@@ -26,7 +34,7 @@ const News = () => {
   const [newNews, setNewNews] = useState({
     title: "",
     description: "",
-    date: "",
+    newsDate: "",
     file: null,
   });
 
@@ -34,21 +42,42 @@ const News = () => {
   const [editData, setEditData] = useState({
     title: "",
     description: "",
-    date: "",
+    newsDate: "",
     file: null,
   });
   const [selectedNews, setSelectedNews] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const user = useSelector((store) => store.auth);
+  const token = user?.user?.data?.token;
+
+  //Fetch All News
+  const fetchAllNews = async () => {
+    try {
+      const response = await axios.get(GETAPI, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setNewsList(response.data.data || []); // Extract users from API response
+    } catch (err) {
+      console.log(err.response?.data?.message);
+    }
+  };
+
   // Handle Modal Close
   const closeUploadModal = () => {
     setUploadModalOpen(false);
-    setNewNews({ title: "", description: "", date: "", file: null });
+    setNewNews({ title: "", description: "", newsDate: "", file: null });
   };
 
   const closeEditModal = () => {
     setEditModalOpen(false);
-    setEditData({ title: "", description: "", date: "", file: null });
+    setEditData({ title: "", description: "", newsDate: "", file: null });
     setSelectedNews(null);
   };
 
@@ -64,20 +93,58 @@ const News = () => {
   };
 
   // Handle Post News
-  const handlePostNews = () => {
-    if (newNews.title && newNews.description && newNews.file && newNews.date) {
-      const imageURL = URL.createObjectURL(newNews.file);
-      setNewsList([
-        {
-          title: newNews.title,
-          description: newNews.description,
-          date: newNews.date,
-          image: imageURL,
-          isActive: false,
-        },
-        ...newsList,
-      ]);
-      closeUploadModal();
+  // const handlePostNews = () => {
+  //   if (
+  //     newNews.title &&
+  //     newNews.description &&
+  //     newNews.file &&
+  //     newNews.newsDate
+  //   ) {
+  //     const imageURL = URL.createObjectURL(newNews.file);
+  //     setNewsList([
+  //       {
+  //         title: newNews.title,
+  //         description: newNews.description,
+  //         newsDate: newNews.newsDate,
+  //         image: imageURL,
+  //         isActive: false,
+  //       },
+  //       ...newsList,
+  //     ]);
+  //     closeUploadModal();
+  //   }
+  // };
+
+  const handlePostNews = async () => {
+    if (
+      newNews.title &&
+      newNews.description &&
+      newNews.file &&
+      newNews.newsDate
+    ) {
+      const formData = new FormData();
+      formData.append("title", newNews.title);
+      formData.append("description", newNews.description);
+      formData.append("newsDate", newNews.newsDate);
+      if (newNews.file) {
+        formData.append("file", newNews.file);
+      }
+
+      try {
+        const response = await axios.post(POSTAPI, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        if (response.status === 200) {
+          fetchAllNews();
+          closeUploadModal();
+        }
+      } catch (error) {
+        console.error("Error posting News:", error);
+      }
     }
   };
 
@@ -86,7 +153,7 @@ const News = () => {
     setEditData({
       title: news.title,
       description: news.description,
-      date: news.date,
+      newsDate: news.newsDate,
       file: null,
     });
     setSelectedNews(news);
@@ -101,7 +168,7 @@ const News = () => {
             ...news,
             title: editData.title,
             description: editData.description,
-            date: editData.date,
+            newsDate: editData.newsDate,
             image: editData.file
               ? URL.createObjectURL(editData.file)
               : news.image,
@@ -125,6 +192,23 @@ const News = () => {
     );
     setNewsList(updatedNewsList);
   };
+
+  // Handle Pagination
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchAllNews();
+    }
+  }, [newsList]);
 
   return (
     <Box sx={{ padding: 2 }}>
@@ -172,44 +256,56 @@ const News = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {newsList.map((news, index) => (
-                <TableRow key={index}>
-                  <TableCell>{news.title}</TableCell>
-                  <TableCell>{news.date}</TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={news.isActive}
-                      onChange={() => toggleActiveStatus(news)}
-                      color="primary"
-                    />
-                    {news.isActive ? "Active" : "Inactive"}
-                  </TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => handleEdit(news)}>
+              {newsList
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((news, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{news.title}</TableCell>
+                    <TableCell>{news.newsDate}</TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={news.isActive}
+                        onChange={() => toggleActiveStatus(news)}
+                        color="primary"
+                      />
+                      {news.isActive ? "Active" : "Inactive"}
+                    </TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => handleEdit(news)}>
+                        <Button
+                          variant="contained"
+                          sx={{ backgroundColor: "#800000" }}
+                          startIcon={<Edit />}
+                          onClick={() => {
+                            handleEdit(news);
+                            closeViewModal();
+                          }}
+                        >
+                          Edit
+                        </Button>
+                      </IconButton>
                       <Button
                         variant="contained"
-                        sx={{ backgroundColor: "#800000" }}
-                        startIcon={<Edit />}
-                        onClick={() => {
-                          handleEdit(news);
-                          closeViewModal();
-                        }}
+                        sx={{ marginLeft: 1 }}
+                        onClick={() => handleView(news)}
                       >
-                        Edit
+                        View
                       </Button>
-                    </IconButton>
-                    <Button
-                      variant="contained"
-                      sx={{ marginLeft: 1 }}
-                      onClick={() => handleView(news)}
-                    >
-                      View
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
+          {/* Pagination */}
+          <TablePagination
+            rowsPerPageOptions={[10, 20, 30]}
+            component="div"
+            count={newsList.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
         </TableContainer>
       )}
 
@@ -247,9 +343,9 @@ const News = () => {
           <TextField
             fullWidth
             type="date"
-            value={newNews.date}
+            value={newNews.newsDate}
             onChange={(e) => {
-              setNewNews((prev) => ({ ...prev, date: e.target.value }));
+              setNewNews((prev) => ({ ...prev, newsDate: e.target.value }));
             }}
             sx={{ marginBottom: 2 }}
           />
@@ -274,7 +370,7 @@ const News = () => {
             disabled={
               !newNews.title.trim() ||
               !newNews.description.trim() ||
-              !newNews.date.trim() ||
+              !newNews.newsDate.trim() ||
               !newNews.file
             }
           >
@@ -317,9 +413,9 @@ const News = () => {
           <TextField
             fullWidth
             type="date"
-            value={editData.date}
+            value={editData.newsDate}
             onChange={(e) => {
-              setEditData((prev) => ({ ...prev, date: e.target.value }));
+              setEditData((prev) => ({ ...prev, newsDate: e.target.value }));
             }}
             sx={{ marginBottom: 2 }}
           />
