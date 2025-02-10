@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -16,6 +16,13 @@ import {
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EditIcon from "@mui/icons-material/Edit";
+import { useSelector } from "react-redux";
+import axios from "axios";
+
+const GETAPI = "http://shivdeeplande.com:8001/api/v1/gallery";
+// const POSTAPI = "http://shivdeeplande.com:8001/api/v1/gallery";
+// const PUTAPI = "http://shivdeeplande.com:8001";
+// const DELETEAPI = "http://shivdeeplande.com:8001";
 
 const Gallery = () => {
   const [images, setImages] = useState([]);
@@ -23,6 +30,27 @@ const Gallery = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [newImage, setNewImage] = useState({ title: "", file: null });
   const [selectedImage, setSelectedImage] = useState(null); // To hold the image to be edited
+
+  console.log(images);
+
+  const user = useSelector((store) => store.auth);
+  const token = user?.user?.data?.token;
+
+  // Fetch All Image
+  const fetchAllImage = async () => {
+    try {
+      const response = await axios.get(GETAPI, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setImages(response.data.data || []); // Extract users from API response
+    } catch (error) {
+      console.log(error.response?.data?.message);
+    }
+  };
+
+  console.log(images);
 
   // Handle Modal Close
   const closeUploadModal = () => {
@@ -47,7 +75,7 @@ const Gallery = () => {
     if (newImage.file && newImage.title) {
       const imageURL = URL.createObjectURL(newImage.file);
       setImages([
-        { url: imageURL, active: 0, label: newImage.title },
+        { image: imageURL, active: 0, label: newImage.title },
         ...images,
       ]);
       closeUploadModal();
@@ -83,6 +111,12 @@ const Gallery = () => {
     );
     setImages(updatedImages);
   };
+
+  // useEffect(() => {
+  //   if (token) {
+  //     fetchAllImage();
+  //   }
+  // }, [images]);
 
   return (
     <Box sx={{ padding: 2 }}>

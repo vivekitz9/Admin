@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -15,16 +15,32 @@ import { Visibility, VisibilityOff, Email, Lock } from "@mui/icons-material";
 import AuthPageStyles from "../styles/AuthePageStyles";
 import logoImage from "../assets/images/logoImage.jpg";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser } from "../redux/middleware/middleware";
+import { toast } from "sonner";
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const user = useSelector((store) => store.auth);
 
   const [showPassword, setShowPassword] = useState(false);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (user?.user?.success) {
+      navigate("/", { replace: true });
+      toast("Welcome to Home");
+    } else if (user?.user?.message) {
+      toast(user?.user?.message);
+    }
+  }, [user]); // Re-run when `user` updates
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
   const handleChange = (e) => {
     setFormData((prev) => {
       return {
@@ -33,15 +49,12 @@ const AuthPage = () => {
       };
     });
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    localStorage.setItem("formData", JSON.stringify(formData));
-    localStorage.setItem("isLogin", true);
-    const isLogin = localStorage.getItem("isLogin");
-    if (isLogin) {
-      navigate("/", { replace: true });
-    }
+    dispatch(loginUser(formData));
   };
+
   return (
     <Box sx={AuthPageStyles.container}>
       <Card sx={AuthPageStyles.card}>
@@ -55,6 +68,7 @@ const AuthPage = () => {
             </Typography>
           }
         />
+
         <CardContent>
           <form onSubmit={handleSubmit}>
             <Box sx={{ mb: 2 }}>
@@ -118,4 +132,5 @@ const AuthPage = () => {
     </Box>
   );
 };
+
 export default AuthPage;

@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 import {
   HomeIcon,
-  //   InfoIcon,
   GoalIcon,
   PeopleIcon,
   EventIcon,
@@ -22,16 +21,17 @@ import {
   ExitToAppIcon,
 } from "../../assets/icons/icons";
 import SideMenuStyle from "../../styles/Home/SideMenuStyle";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 const SideMenu = () => {
-  const navigate = useNavigate();
   const logout = () => {
     localStorage.clear();
-    navigate("/login");
+    // navigate("/login");
+    window.location.href = "/login";
   };
   const navItems = [
     { text: "Home", icon: <HomeIcon />, path: "/" },
+    { text: "View Users", icon: <PeopleIcon />, path: "all-users" },
     { text: "Mission & Vision", icon: <GoalIcon />, path: "mission-vision" },
     { text: "Member", icon: <PeopleIcon />, path: "member" },
     { text: "Events", icon: <EventIcon />, path: "events" },

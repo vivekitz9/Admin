@@ -16,10 +16,13 @@ import Member from "./pages/Member/Member";
 import News from "./pages/News/News";
 import MissionAndVision from "./pages/Mission-Vision/MissionAndVision";
 import ConnectWithMe from "./pages/ConnectWithMe/ConnectWithMe";
+import { useSelector } from "react-redux";
+import AllUsers from "./pages/AllUsers/AllUsers";
 
 const ProtectedRoute = ({ children }) => {
-  const isLogin = localStorage.getItem("isLogin");
-  if (isLogin) {
+  const user = useSelector((store) => store.auth);
+  // const isLogin = localStorage.getItem("isLogin");
+  if (user?.user?.success) {
     return children;
   } else {
     return <Navigate to="/login" replace />;
@@ -46,6 +49,7 @@ const router = createBrowserRouter(
         <Route path="member" element={<Member />} />
         <Route path="news" element={<News />} />
         <Route path="write-to-me" element={<ConnectWithMe />} />
+        <Route path="all-users" element={<AllUsers />} />
 
         {/* <Route path="*" element={<ErrorPage />} /> */}
       </Route>
