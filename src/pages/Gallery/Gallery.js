@@ -10,6 +10,7 @@ import {
   TextField,
   List,
   ListItem,
+  CircularProgress,
   ListItemText,
   ListItemSecondaryAction,
   Switch,
@@ -17,21 +18,29 @@ import {
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EditIcon from "@mui/icons-material/Edit";
 import { useSelector } from "react-redux";
+import { baseURL } from "../../assets/BaseUrl";
 import axios from "axios";
 
-const GETAPI = "http://shivdeeplande.com:8001/api/v1/gallery";
-// const POSTAPI = "http://shivdeeplande.com:8001/api/v1/gallery";
-// const PUTAPI = "http://shivdeeplande.com:8001";
-// const DELETEAPI = "http://shivdeeplande.com:8001";
+const GETAPI = `${baseURL}api/v1/gallery`;
+const POSTAPI = `${baseURL}api/v1/gallery`;
+const PUTAPI = `${baseURL}api/v1/gallery`;
 
 const Gallery = () => {
   const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [newImage, setNewImage] = useState({ title: "", file: null });
-  const [selectedImage, setSelectedImage] = useState(null); // To hold the image to be edited
 
-  console.log(images);
+  const [editData, setEditData] = useState({
+    title: "",
+    file: null,
+  });
+
+  const [selectedImage, setSelectedImage] = useState(null); // To hold the image to be edited
+  console.log(selectedImage);
+
+  // console.log(images);
 
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
@@ -44,13 +53,15 @@ const Gallery = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setImages(response.data.data || []); // Extract users from API response
+      setImages(response.data.data || []);
     } catch (error) {
-      console.log(error.response?.data?.message);
+      console.log(error.response?.data?.message || "Failed to fetch users");
+    } finally {
+      setLoading(false);
     }
   };
 
-  console.log(images);
+  // console.log(images);
 
   // Handle Modal Close
   const closeUploadModal = () => {
@@ -61,41 +72,75 @@ const Gallery = () => {
   const closeEditModal = () => {
     setEditModalOpen(false);
     setSelectedImage(null);
-    setNewImage({ title: "", file: null });
+    setEditData({ title: "", file: null });
   };
 
   // Handle Image Upload
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    setNewImage((prev) => ({ ...prev, file }));
+    setEditData((prev) => ({ ...prev, file }));
   };
 
   // Handle Post Image
-  const handlePostImage = () => {
+  const handlePostImage = async () => {
     if (newImage.file && newImage.title) {
-      const imageURL = URL.createObjectURL(newImage.file);
-      setImages([
-        { image: imageURL, active: 0, label: newImage.title },
-        ...images,
-      ]);
-      closeUploadModal();
+      const formData = new FormData();
+      formData.append("title", newImage.title);
+      if (newImage.file) {
+        formData.append("file", newImage.file);
+      }
+      try {
+        const response = await axios.post(POSTAPI, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        if (response.status === 200) {
+          fetchAllImage();
+          closeUploadModal();
+        }
+      } catch (error) {
+        console.log("Error Posting Image", error);
+      }
     }
   };
 
-  // Handle Edit Image
-  const handleEditImage = () => {
-    if (newImage.file && newImage.title) {
-      const updatedImages = images.map((img) =>
-        img.url === selectedImage.url
-          ? {
-              ...img,
-              label: newImage.title,
-              url: URL.createObjectURL(newImage.file),
-            }
-          : img
-      );
-      setImages(updatedImages);
-      closeEditModal();
+  const handleEdit = (image) => {
+    setEditData({
+      title: image.title,
+      file: null,
+    });
+    setSelectedImage(image);
+    setEditModalOpen(true);
+  };
+
+  const handleEditImage = async () => {
+    if (selectedImage.id && editData.title && editData.file) {
+      const formData = new FormData();
+      formData.append("title", editData.title);
+      if (editData.file) {
+        formData.append("file", editData.file);
+      }
+
+      try {
+        const response = await axios.put(
+          `${PUTAPI}/${selectedImage.id}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        fetchAllImage();
+        closeEditModal();
+      } catch (error) {
+        console.log("Error Updating Image: ", error);
+      }
     }
   };
 
@@ -112,11 +157,11 @@ const Gallery = () => {
     setImages(updatedImages);
   };
 
-  // useEffect(() => {
-  //   if (token) {
-  //     fetchAllImage();
-  //   }
-  // }, [images]);
+  useEffect(() => {
+    if (token) {
+      fetchAllImage();
+    }
+  }, []);
 
   return (
     <Box sx={{ padding: 2 }}>
@@ -133,7 +178,7 @@ const Gallery = () => {
         <Box sx={{ textAlign: "center", marginBottom: 3 }}>
           <Button
             variant="contained"
-            sx={{ backgroundColor: "#800000" }}
+            sx={{ backgroundColor: "#84764F" }}
             onClick={() => setUploadModalOpen(true)}
             startIcon={<CloudUploadIcon />}
           >
@@ -142,7 +187,7 @@ const Gallery = () => {
         </Box>
       </Box>
 
-      <hr color="#800000" style={{ marginTop: "-8px" }} />
+      <hr color="#84764F" style={{ marginTop: "-8px" }} />
 
       {/* Show message if no images uploaded */}
       {images.length === 0 ? (
@@ -155,11 +200,11 @@ const Gallery = () => {
       ) : (
         <List>
           {images.map((image) => (
-            <ListItem key={image.url} sx={{ borderBottom: "1px solid #ddd" }}>
+            <ListItem key={image.image} sx={{ borderBottom: "1px solid #ddd" }}>
               <CardMedia
                 component="img"
-                image={image.url}
-                alt={image.label}
+                image={image.image}
+                alt={image.title}
                 sx={{
                   width: "100px",
                   height: "100px",
@@ -170,7 +215,7 @@ const Gallery = () => {
               />
 
               <ListItemText
-                primary={image.label}
+                primary={image.title}
                 secondary={`Status: ${
                   image.active === 1 ? "Active" : "Inactive"
                 }`}
@@ -184,9 +229,7 @@ const Gallery = () => {
                 />
                 <Button
                   onClick={() => {
-                    setSelectedImage(image);
-                    setNewImage({ title: image.label, file: null });
-                    setEditModalOpen(true);
+                    handleEdit(image);
                   }}
                   startIcon={<EditIcon />}
                   sx={{ marginLeft: 2 }}
@@ -236,7 +279,7 @@ const Gallery = () => {
           <Button
             variant="contained"
             onClick={handlePostImage}
-            sx={{ backgroundColor: "#800000" }}
+            sx={{ backgroundColor: "#84764F" }}
             disabled={!newImage.title.trim() || !newImage.file}
           >
             Post
@@ -258,9 +301,9 @@ const Gallery = () => {
           <TextField
             fullWidth
             label="Image Title"
-            value={newImage.title}
+            value={editData.title}
             onChange={(e) =>
-              setNewImage((prev) => ({ ...prev, title: e.target.value }))
+              setEditData((prev) => ({ ...prev, title: e.target.value }))
             }
             sx={{ marginBottom: 2 }}
           />
@@ -281,8 +324,8 @@ const Gallery = () => {
           <Button
             variant="contained"
             onClick={handleEditImage}
-            sx={{ backgroundColor: "#800000" }}
-            disabled={!newImage.title.trim() || !newImage.file}
+            sx={{ backgroundColor: "#84764F" }}
+            disabled={!editData.title.trim() || !editData.file}
           >
             Save Changes
           </Button>

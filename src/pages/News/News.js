@@ -21,12 +21,12 @@ import {
 import { Edit } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useSelector } from "react-redux";
+import { baseURL } from "../../assets/BaseUrl";
 import axios from "axios";
 
-const GETAPI = "http://shivdeeplande.com:8001/api/v1/news";
-const POSTAPI = "http://shivdeeplande.com:8001/api/v1/news";
-// const PUTAPI = "http://shivdeeplande.com:8001";
-// const DELETEAPI = "http://shivdeeplande.com:8001";
+const GETAPI = `${baseURL}api/v1/news`;
+const POSTAPI = `${baseURL}api/v1/news`;
+const PUTAPI = `${baseURL}api/v1/news`;
 
 const News = () => {
   const [newsList, setNewsList] = useState([]);
@@ -92,29 +92,6 @@ const News = () => {
     setNewNews((prev) => ({ ...prev, file }));
   };
 
-  // Handle Post News
-  // const handlePostNews = () => {
-  //   if (
-  //     newNews.title &&
-  //     newNews.description &&
-  //     newNews.file &&
-  //     newNews.newsDate
-  //   ) {
-  //     const imageURL = URL.createObjectURL(newNews.file);
-  //     setNewsList([
-  //       {
-  //         title: newNews.title,
-  //         description: newNews.description,
-  //         newsDate: newNews.newsDate,
-  //         image: imageURL,
-  //         isActive: false,
-  //       },
-  //       ...newsList,
-  //     ]);
-  //     closeUploadModal();
-  //   }
-  // };
-
   const handlePostNews = async () => {
     if (
       newNews.title &&
@@ -160,23 +137,45 @@ const News = () => {
     setEditModalOpen(true);
   };
 
-  // Handle Save Edit
-  const handleSaveEdit = () => {
-    const updatedNewsList = newsList.map((news) =>
-      news === selectedNews
-        ? {
-            ...news,
-            title: editData.title,
-            description: editData.description,
-            newsDate: editData.newsDate,
-            image: editData.file
-              ? URL.createObjectURL(editData.file)
-              : news.image,
-          }
-        : news
-    );
-    setNewsList(updatedNewsList);
-    closeEditModal();
+  const handleSaveEdit = async () => {
+    if (!selectedNews || !selectedNews.id) {
+      console.error("No News selected for editing");
+      return;
+    }
+
+    if (!token) {
+      console.error("No authentication token found");
+      return;
+    }
+
+    const updatedNewsList = {
+      title: editData.title,
+      content: editData.description,
+      newsDate: editData.newsDate,
+      image: editData.file
+        ? URL.createObjectURL(editData.file)
+        : selectedNews.image,
+    };
+
+    try {
+      const response = await axios.put(
+        `${PUTAPI}/${selectedNews.id}`,
+        updatedNewsList,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      fetchAllNews();
+      console.log("News updated successfully:", response.data);
+
+      closeEditModal();
+    } catch (error) {
+      console.error("Error updating News:", error);
+    }
   };
 
   // Handle View
@@ -194,7 +193,6 @@ const News = () => {
   };
 
   // Handle Pagination
-
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -225,7 +223,7 @@ const News = () => {
         <Box sx={{ textAlign: "center", marginBottom: 3 }}>
           <Button
             variant="contained"
-            sx={{ backgroundColor: "#800000" }}
+            sx={{ backgroundColor: "#84764F" }}
             onClick={() => setUploadModalOpen(true)}
             startIcon={<CloudUploadIcon />}
           >
@@ -234,7 +232,7 @@ const News = () => {
         </Box>
       </Box>
 
-      <hr color="#800000" style={{ marginTop: "-8px" }} />
+      <hr color="#84764F" style={{ marginTop: "-8px" }} />
 
       {/* Table View */}
       {newsList.length === 0 ? (
@@ -274,7 +272,7 @@ const News = () => {
                       <IconButton onClick={() => handleEdit(news)}>
                         <Button
                           variant="contained"
-                          sx={{ backgroundColor: "#800000" }}
+                          sx={{ backgroundColor: "#84764F" }}
                           startIcon={<Edit />}
                           onClick={() => {
                             handleEdit(news);
@@ -366,7 +364,7 @@ const News = () => {
           <Button
             variant="contained"
             onClick={handlePostNews}
-            sx={{ backgroundColor: "#800000" }}
+            sx={{ backgroundColor: "#84764F" }}
             disabled={
               !newNews.title.trim() ||
               !newNews.description.trim() ||
@@ -438,7 +436,7 @@ const News = () => {
           <Button
             variant="contained"
             onClick={handleSaveEdit}
-            sx={{ backgroundColor: "#800000" }}
+            sx={{ backgroundColor: "#84764F" }}
             disabled={!editData.title.trim() || !editData.description.trim()}
           >
             Save
@@ -476,7 +474,7 @@ const News = () => {
           </Button>
           <Button
             variant="contained"
-            sx={{ backgroundColor: "#800000" }}
+            sx={{ backgroundColor: "#84764F" }}
             startIcon={<Edit />}
             onClick={() => {
               closeViewModal();

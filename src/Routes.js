@@ -18,6 +18,9 @@ import MissionAndVision from "./pages/Mission-Vision/MissionAndVision";
 import ConnectWithMe from "./pages/ConnectWithMe/ConnectWithMe";
 import { useSelector } from "react-redux";
 import AllUsers from "./pages/AllUsers/AllUsers";
+import PrivacyPolicy from "./pages/PrivacyPolicy/PrivacyPolicy";
+import TermsConditions from "./pages/TermsConditions/TermsConditions";
+import HelpSupport from "./pages/HelpSupport/HelpSupport";
 
 const ProtectedRoute = ({ children }) => {
   const user = useSelector((store) => store.auth);
@@ -50,6 +53,9 @@ const router = createBrowserRouter(
         <Route path="news" element={<News />} />
         <Route path="write-to-me" element={<ConnectWithMe />} />
         <Route path="all-users" element={<AllUsers />} />
+        <Route path="privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="terms-conditions" element={<TermsConditions />} />
+        <Route path="help-support" element={<HelpSupport />} />
 
         {/* <Route path="*" element={<ErrorPage />} /> */}
       </Route>

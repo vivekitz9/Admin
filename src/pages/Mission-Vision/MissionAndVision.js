@@ -86,7 +86,7 @@ const MissionAndVision = () => {
         <Box sx={{ textAlign: "center", marginBottom: 3 }}>
           <Button
             variant="contained"
-            sx={{ backgroundColor: "#800000" }}
+            sx={{ backgroundColor: "#84764F" }}
             onClick={() => setUploadModalOpen(true)}
             startIcon={<CloudUploadIcon />}
           >
@@ -95,7 +95,7 @@ const MissionAndVision = () => {
         </Box>
       </Box>
 
-      <hr color="#800000" style={{ marginTop: "-8px" }} />
+      <hr color="#84764F" style={{ marginTop: "-8px" }} />
 
       {missionAndVision.length === 0 ? (
         <Typography
@@ -132,7 +132,7 @@ const MissionAndVision = () => {
                       <IconButton onClick={() => handleEdit(item)}>
                         <Button
                           variant="contained"
-                          sx={{ backgroundColor: "#800000" }}
+                          sx={{ backgroundColor: "#84764F" }}
                           startIcon={<Edit />}
                         >
                           Edit
@@ -192,13 +192,13 @@ const MissionAndVision = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeUploadModal} sx={{ color: "#808080" }}>
+          <Button onClick={closeUploadModal} sx={{ color: "#84764F" }}>
             Cancel
           </Button>
           <Button
             variant="contained"
             onClick={handlePost}
-            sx={{ backgroundColor: "#800000" }}
+            sx={{ backgroundColor: "#84764F" }}
             disabled={
               !newMissionVision.title.trim() ||
               !newMissionVision.description.trim()
@@ -256,7 +256,7 @@ const MissionAndVision = () => {
           <Button
             variant="contained"
             onClick={handleSaveEdit}
-            sx={{ backgroundColor: "#800000" }}
+            sx={{ backgroundColor: "#84764F" }}
           >
             Save
           </Button>

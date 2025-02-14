@@ -13,6 +13,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { PersonAdd, Settings, Logout } from "../../assets/icons/icons";
+import shivdeepLogo from "../../assets/images/shivdeepLogo.jpeg";
 
 const NavBar = () => {
   const [openClose, setOpenClose] = useState(null);
@@ -34,15 +35,18 @@ const NavBar = () => {
     <Box sx={NavBarStyle.mainContainer}>
       <Container sx={NavBarStyle.navContainer}>
         <Box sx={NavBarStyle.logoContainer}>
-          <Typography
-            variant="h6"
-            noWrap
-            component="a"
-            sx={NavBarStyle.logo}
+          <Avatar
+            alt="logo"
+            src={shivdeepLogo}
+            sx={{
+              width: 50,
+              height: 50,
+              marginTop: "5px",
+              border: "3px solid white",
+              boxShadow: "0 0 5px rgba(0,0,0,0.3)",
+            }}
             onClick={() => (window.location.href = "/")}
-          >
-            LOGO
-          </Typography>
+          />
         </Box>
         <Box sx={NavBarStyle.navBarProfile}>
           <Tooltip /* title="Account settings" */>
@@ -57,7 +61,13 @@ const NavBar = () => {
               <Avatar
                 alt="logo"
                 src={logoImage}
-                sx={NavBarStyle.navbarAvatar}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  marginTop: "5px",
+                  border: "3px solid white",
+                  boxShadow: "0 0 5px rgba(0,0,0,0.3)",
+                }}
               />
             </IconButton>
           </Tooltip>
