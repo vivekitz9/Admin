@@ -1,7 +1,8 @@
 const NavBarStyle = {
   mainContainer: {
     // background: "linear-gradient(90deg, #4e54c8, #8f94fb)",
-    background: "#FFD6D6",
+    // background: "#FFD6D6",
+    background: "#84764F",
     color: "white",
     height: 80,
     padding: "0 20px",

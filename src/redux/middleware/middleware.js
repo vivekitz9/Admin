@@ -4,6 +4,7 @@ import {
   loginRequest,
   loginSuccess,
 } from "../actions/authActions";
+import { baseURL } from "../../assets/BaseUrl";
 
 export const loginUser = (formData) => {
   return async (dispatch) => {
@@ -11,7 +12,7 @@ export const loginUser = (formData) => {
 
     try {
       const response = await axios.post(
-        "http://shivdeeplande.com:8001/api/v1/admin/login",
+        `${baseURL}api/v1/admin/login`,
         formData,
         {
           headers: { "Content-Type": "application/json" },

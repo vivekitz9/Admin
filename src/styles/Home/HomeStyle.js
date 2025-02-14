@@ -8,6 +8,7 @@ const HomeStyle = {
     padding: 0,
     marginTop: 10,
     background: "#e8f4fd",
+
     height: "88vh",
     width: "100vw",
     overflow: "hidden",

@@ -1,6 +1,7 @@
 const SideMenuStyle = {
   sidemenuContainer: {
-    background: "#FFD6D6",
+    // background: "#FFD6D6",
+    background: "#84764F",
     position: "relative",
     height: "100%",
     width: "270px",
@@ -11,15 +12,19 @@ const SideMenuStyle = {
       width: "8px",
     },
     "&::-webkit-scrollbar-track": {
-      background: "#FFD6D6",
+      // background: "#FFD6D6",
+      background: "#84764F",
       borderRadius: "4px",
     },
     "&::-webkit-scrollbar-thumb": {
-      background: "#FFB6B6",
+      // background: "#FFB6B6",
+      background: "#968860",
       borderRadius: "4px",
     },
     "&::-webkit-scrollbar-thumb:hover": {
-      background: "#FF9090",
+      // background: "#FF9090",
+      background: "#968860",
+      cursor: "pointer",
     },
   },
   list: {
@@ -30,18 +35,18 @@ const SideMenuStyle = {
     padding: 0,
   },
   listItem: {
-    background: "#FFD6D6",
+    background: "#84764F",
     marginBottom: "2px",
     "&:hover": {
-      bgcolor: " #ef9a9a",
+      bgcolor: " #968860",
       color: "white",
       cursor: "pointer",
     },
     transition: "background-color 0.3s",
   },
   avatar: {
-    background: "#800000",
-    color: "white",
+    background: "white",
+    color: "#84764F",
   },
 };
 export default SideMenuStyle;

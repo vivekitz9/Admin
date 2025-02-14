@@ -21,10 +21,12 @@ import {
 import { Edit, Token } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useSelector } from "react-redux";
+import { baseURL } from "../../assets/BaseUrl";
 import axios from "axios";
 
-const GETAPI = "http://shivdeeplande.com:8001/api/v1/blogs";
-const POSTAPI = "http://shivdeeplande.com:8001/api/v1/blogs";
+const GETAPI = `${baseURL}api/v1/blogs`;
+const POSTAPI = `${baseURL}api/v1/blogs`;
+const PUTAPI = `${baseURL}api/v1/blogs`;
 
 const Blogs = () => {
   const [blogs, setBlogs] = useState([]);
@@ -87,26 +89,7 @@ const Blogs = () => {
     setNewBlog((prev) => ({ ...prev, file }));
   };
 
-  // Handle Post Blog
-  // const handlePostBlog = () => {
-  //   if (newBlog.title && newBlog.content && newBlog.file) {
-  //     const imageURL = URL.createObjectURL(newBlog.file);
-  //     setBlogs([
-  //       {
-  //         title: newBlog.title,
-  //         content: newBlog.content,
-  //         image: imageURL,
-  //         isActive: false,
-  //       },
-  //       ...blogs,
-  //     ]);
-  //     closeUploadModal();
-  //   }
-
-  // };
-
   const handlePostBlog = async () => {
-    console.log("New Blog Data  :  ", newBlog);
     if (newBlog.title && newBlog.content && newBlog.file) {
       const formData = new FormData();
       formData.append("title", newBlog.title);
@@ -114,8 +97,6 @@ const Blogs = () => {
       if (newBlog.file) {
         formData.append("file", newBlog.file);
       }
-
-      console.log("Form Data   :  ", formData);
 
       try {
         const response = await axios.post(POSTAPI, formData, {
@@ -125,18 +106,7 @@ const Blogs = () => {
           },
         });
 
-        console.log("Response  :  ", response);
-
         if (response.status === 200) {
-          // setBlogs([
-          //   {
-          //     title: response.data.title,
-          //     content: response.data.content,
-          //     image: response.data.imageURL, // Assuming API returns the image URL
-          //     isActive: false,
-          //   },
-          //   ...blogs,
-          // ]);
           fetchAllBlogs();
           closeUploadModal();
         }
@@ -148,7 +118,6 @@ const Blogs = () => {
 
   // Handle Edit
   const handleEdit = (blog) => {
-    console.log(blog);
     setEditData({
       title: blog.title,
       content: blog.content,
@@ -158,22 +127,44 @@ const Blogs = () => {
     setEditModalOpen(true);
   };
 
-  // Handle Save Edit
-  const handleSaveEdit = () => {
-    const updatedBlogs = blogs.map((blog) =>
-      blog === selectedBlog
-        ? {
-            ...blog,
-            title: editData.title,
-            content: editData.content,
-            image: editData.file
-              ? URL.createObjectURL(editData.file)
-              : blog.image,
-          }
-        : blog
-    );
-    setBlogs(updatedBlogs);
-    closeEditModal();
+  const handleSaveEdit = async () => {
+    if (!selectedBlog || !selectedBlog.id) {
+      console.error("No blog selected for editing");
+      return;
+    }
+
+    if (!token) {
+      console.error("No authentication token found");
+      return;
+    }
+
+    const updatedBlog = {
+      title: editData.title,
+      content: editData.content,
+      image: editData.file
+        ? URL.createObjectURL(editData.file)
+        : selectedBlog.image,
+    };
+
+    try {
+      const response = await axios.put(
+        `${PUTAPI}/${selectedBlog.id}`,
+        updatedBlog,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      fetchAllBlogs();
+      console.log("Blog updated successfully:", response.data);
+
+      closeEditModal();
+    } catch (error) {
+      console.error("Error updating blog:", error);
+    }
   };
 
   // Handle View
@@ -228,7 +219,7 @@ const Blogs = () => {
           <Box sx={{ textAlign: "center", marginBottom: 3 }}>
             <Button
               variant="contained"
-              sx={{ backgroundColor: "#800000" }}
+              sx={{ backgroundColor: "#84764F" }}
               onClick={() => setUploadModalOpen(true)}
               startIcon={<CloudUploadIcon />}
             >
@@ -236,7 +227,7 @@ const Blogs = () => {
             </Button>
           </Box>
         </Box>
-        <hr color="#800000" style={{ marginTop: "-8px" }} />
+        <hr color="#84764F" style={{ marginTop: "-8px" }} />
       </Box>
 
       {/* Table View */}
@@ -288,7 +279,7 @@ const Blogs = () => {
                       <IconButton onClick={() => handleEdit(blog)}>
                         <Button
                           variant="contained"
-                          sx={{ backgroundColor: "#800000" }}
+                          sx={{ backgroundColor: "#84764F" }}
                           startIcon={<Edit />}
                           onClick={() => {
                             handleEdit(blog);
@@ -371,7 +362,7 @@ const Blogs = () => {
           <Button
             variant="contained"
             onClick={handlePostBlog}
-            sx={{ backgroundColor: "#800000" }}
+            sx={{ backgroundColor: "#84764F" }}
             disabled={
               !newBlog.title.trim() || !newBlog.content.trim() || !newBlog.file
             }
@@ -431,7 +422,7 @@ const Blogs = () => {
           <Button
             variant="contained"
             onClick={handleSaveEdit}
-            sx={{ backgroundColor: "#800000" }}
+            sx={{ backgroundColor: "#84764F" }}
             disabled={!editData.title.trim() || !editData.content.trim()}
           >
             Save
@@ -470,7 +461,7 @@ const Blogs = () => {
           </Button>
           <Button
             variant="contained"
-            sx={{ backgroundColor: "#800000" }}
+            sx={{ backgroundColor: "#84764F" }}
             startIcon={<Edit />}
             onClick={() => {
               closeViewModal();

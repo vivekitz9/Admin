@@ -40,8 +40,12 @@ const SideMenu = () => {
     { text: "News", icon: <AnnouncementIcon />, path: "news" },
     { text: "Connect with Me", icon: <MailIcon />, path: "write-to-me" },
     { text: "Help & Support", icon: <HelpIcon />, path: "help-support" },
-    { text: "Privacy Policy", icon: <LockIcon />, path: "pravacy-policy" },
-    { text: "Terms & Conditions", icon: <GavelIcon />, path: "term-condition" },
+    { text: "Privacy Policy", icon: <LockIcon />, path: "privacy-policy" },
+    {
+      text: "Terms & Conditions",
+      icon: <GavelIcon />,
+      path: "terms-conditions",
+    },
     {
       text: "Log Out",
       icon: <ExitToAppIcon />,
@@ -65,7 +69,7 @@ const SideMenu = () => {
                     display: "flex",
                     alignItems: "center",
                     width: "100%",
-                    background: isActive ? "#ef9a9a" : "#FFD6D6",
+                    background: isActive ? "#968860" : "#84764F",
                   })
                 : {}
             }
@@ -74,7 +78,7 @@ const SideMenu = () => {
             <ListItemAvatar>
               <Avatar sx={SideMenuStyle.avatar}>{item.icon}</Avatar>
             </ListItemAvatar>
-            <ListItemText primary={item.text} />
+            <ListItemText primary={item.text} sx={{ color: "white" }} />
           </ListItem>
         ))}
       </List>
