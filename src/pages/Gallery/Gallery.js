@@ -61,8 +61,6 @@ const Gallery = () => {
     }
   };
 
-  // console.log(images);
-
   // Handle Modal Close
   const closeUploadModal = () => {
     setUploadModalOpen(false);
@@ -145,16 +143,64 @@ const Gallery = () => {
   };
 
   // Toggle Active/Inactive using Switch
-  const handleToggle = (imageURL) => {
-    if (imageURL.active === 0) {
-      alert("Are you sure to Active selected Image");
-    } else {
-      alert("Are you sure to Inctive selected Image");
-    }
-    const updatedImages = images.map((img) =>
-      img.url === imageURL ? { ...img, active: img.active === 0 ? 1 : 0 } : img
+
+  // const handleToggle = (imageURL) => {
+  //   if (imageURL.active === 0) {
+  //     alert("Are you sure to Active selected Image");
+  //   } else {
+  //     alert("Are you sure to Inctive selected Image");
+  //   }
+  //   const updatedImages = images.map((img) =>
+  //     img.url === imageURL ? { ...img, active: img.active === 0 ? 1 : 0 } : img
+  //   );
+  //   setImages(updatedImages);
+  // };
+
+  const handleToggle = async (image) => {
+    console.log("image Data  :  ", image);
+
+    const newStatus = image.toggle === "0" ? "1" : "0"; // Determine new status
+    const confirmation = window.confirm(
+      `Are you sure you want to ${
+        newStatus === "1" ? "activate" : "deactivate"
+      } this Image?`
     );
-    setImages(updatedImages);
+
+    if (!confirmation) {
+      console.log("Toggle action cancelled");
+      return; // Stop execution if the user clicks Cancel
+    }
+
+    const formData = new FormData();
+    formData.append("title", image.title);
+
+    // Handle image properly
+    if (image.image && typeof image.image !== "string") {
+      formData.append("image", image.image); // If it's a File object
+    } else if (typeof image.image === "string") {
+      formData.append("imageUrl", image.image); // If it's a URL, store as a string
+    }
+
+    // Toggle status correctly
+    formData.append("toggle", image.toggle === "0" ? "1" : "0");
+
+    console.log("Form Data:");
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ": " + pair[1]); // Log each key-value pair
+    }
+
+    try {
+      const response = await axios.put(`${PUTAPI}/${image.id}`, formData, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      fetchAllImage();
+    } catch (error) {
+      console.error("Error updating image:", error);
+    }
   };
 
   useEffect(() => {
@@ -217,14 +263,14 @@ const Gallery = () => {
               <ListItemText
                 primary={image.title}
                 secondary={`Status: ${
-                  image.active === 1 ? "Active" : "Inactive"
+                  image.toggle === "1" ? "Active" : "Inactive"
                 }`}
               />
 
               <ListItemSecondaryAction>
                 <Switch
-                  checked={image.active === 1}
-                  onChange={() => handleToggle(image.url)}
+                  checked={image.toggle === "1"}
+                  onChange={() => handleToggle(image)}
                   color="primary"
                 />
                 <Button

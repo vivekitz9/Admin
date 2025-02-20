@@ -184,12 +184,53 @@ const News = () => {
     setViewModalOpen(true);
   };
 
-  // Toggle Active/Inactive
-  const toggleActiveStatus = (news) => {
-    const updatedNewsList = newsList.map((n) =>
-      n === news ? { ...n, isActive: !n.isActive } : n
+  const toggleActiveStatus = async (news) => {
+    console.log("news Data  :  ", news);
+
+    const newStatus = news.toggle === "0" ? "1" : "0"; // Determine new status
+    const confirmation = window.confirm(
+      `Are you sure you want to ${
+        newStatus === "1" ? "activate" : "deactivate"
+      } this news?`
     );
-    setNewsList(updatedNewsList);
+
+    if (!confirmation) {
+      console.log("Toggle action cancelled");
+      return; // Stop execution if the user clicks Cancel
+    }
+
+    const formData = new FormData();
+    formData.append("title", news.title);
+    formData.append("description", news.description);
+    formData.append("newsDate", news.newsDate);
+    // Handle image properly
+    if (news.image && typeof news.image !== "string") {
+      formData.append("image", news.image); // If it's a File object
+    } else if (typeof news.image === "string") {
+      formData.append("imageUrl", news.image); // If it's a URL, store as a string
+    }
+
+    // Toggle status correctly
+    formData.append("toggle", newStatus);
+
+    console.log("Form Data:");
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ": " + pair[1]); // Log each key-value pair
+    }
+
+    try {
+      const response = await axios.put(`${PUTAPI}/${news.id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data", // Correct Content-Type for FormData
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      fetchAllNews();
+    } catch (error) {
+      console.error("Error updating blog:", error);
+      alert("Something went wrong. Please try again.");
+    }
   };
 
   // Handle Pagination
@@ -262,11 +303,11 @@ const News = () => {
                     <TableCell>{news.newsDate}</TableCell>
                     <TableCell>
                       <Switch
-                        checked={news.isActive}
+                        checked={news.toggle === "1"}
                         onChange={() => toggleActiveStatus(news)}
                         color="primary"
                       />
-                      {news.isActive ? "Active" : "Inactive"}
+                      {news.toggle === "1" ? "Active" : "Inactive"}
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleEdit(news)}>

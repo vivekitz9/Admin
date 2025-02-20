@@ -18,7 +18,7 @@ import {
   Switch,
   TablePagination,
 } from "@mui/material";
-import { Edit, Token } from "@mui/icons-material";
+import { Edit } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
@@ -95,7 +95,7 @@ const Blogs = () => {
       formData.append("title", newBlog.title);
       formData.append("content", newBlog.content);
       if (newBlog.file) {
-        formData.append("file", newBlog.file);
+        formData.append("image", newBlog.file);
       }
 
       try {
@@ -138,18 +138,17 @@ const Blogs = () => {
       return;
     }
 
-    const updatedBlog = {
-      title: editData.title,
-      content: editData.content,
-      image: editData.file
-        ? URL.createObjectURL(editData.file)
-        : selectedBlog.image,
-    };
+    const formData = new FormData();
+    formData.append("title", editData.title);
+    formData.append("content", editData.content);
+    if (editData.file) {
+      formData.append("image", editData.file);
+    }
 
     try {
       const response = await axios.put(
         `${PUTAPI}/${selectedBlog.id}`,
-        updatedBlog,
+        formData,
         {
           headers: {
             "Content-Type": "application/json",
@@ -173,17 +172,53 @@ const Blogs = () => {
     setViewModalOpen(true);
   };
 
-  // Toggle Active/Inactive
-  const toggleActiveStatus = (blog) => {
-    if (Blogs.isActive) {
-      alert("Are you sure to Inactive selected blog");
-    } else {
-      alert("Are you sure to Active selected blog");
-    }
-    const updatedBlogs = blogs.map((b) =>
-      b === blog ? { ...b, isActive: !b.isActive } : b
+  const toggleActiveStatus = async (blog) => {
+    console.log("Blog Data  :  ", blog);
+
+    const newStatus = blog.toggle === "0" ? "1" : "0"; // Determine new status
+    const confirmation = window.confirm(
+      `Are you sure you want to ${
+        newStatus === "1" ? "activate" : "deactivate"
+      } this blog?`
     );
-    setBlogs(updatedBlogs);
+
+    if (!confirmation) {
+      console.log("Toggle action cancelled");
+      return; // Stop execution if the user clicks Cancel
+    }
+
+    const formData = new FormData();
+    formData.append("title", blog.title);
+    formData.append("content", blog.content);
+
+    // Handle image properly
+    if (blog.image && typeof blog.image !== "string") {
+      formData.append("image", blog.image); // If it's a File object
+    } else if (typeof blog.image === "string") {
+      formData.append("imageUrl", blog.image); // If it's a URL, store as a string
+    }
+
+    // Toggle status correctly
+    formData.append("toggle", newStatus);
+
+    console.log("Form Data:");
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ": " + pair[1]); // Log each key-value pair
+    }
+
+    try {
+      const response = await axios.put(`${PUTAPI}/${blog.id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data", // Correct Content-Type for FormData
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      fetchAllBlogs();
+    } catch (error) {
+      console.error("Error updating blog:", error);
+      alert("Something went wrong. Please try again.");
+    }
   };
 
   // Handle Pagination
@@ -201,7 +236,7 @@ const Blogs = () => {
     if (token) {
       fetchAllBlogs();
     }
-  }, [Blogs]);
+  }, [blogs]);
 
   return (
     <Box sx={{ padding: 2 }}>
@@ -269,11 +304,11 @@ const Blogs = () => {
                     </TableCell>
                     <TableCell>
                       <Switch
-                        checked={blog.isActive}
+                        checked={blog.toggle === "1"}
                         onChange={() => toggleActiveStatus(blog)}
                         color="primary"
                       />
-                      {blog.isActive ? "Active" : "Inactive"}
+                      {blog.toggle === "1" ? "Active" : "Inactive"}
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleEdit(blog)}>

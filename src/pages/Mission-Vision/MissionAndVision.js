@@ -1,315 +1,139 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Box,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogActions,
   TextField,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  Button,
   Paper,
-  IconButton,
-  Switch,
+  Typography,
+  Box,
+  CircularProgress,
 } from "@mui/material";
-import { Edit } from "@mui/icons-material";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { baseURL } from "../../assets/BaseUrl";
+import axios from "axios";
+import { useSelector } from "react-redux";
+
+const GETAPI = `${baseURL}api/v1/mission`;
+const POSTAPI = `${baseURL}api/v1/mission`;
+const PUTAPI = `${baseURL}api/v1/mission`;
 
 const MissionAndVision = () => {
-  const [missionAndVision, setMissionAndVision] = useState([]);
-  const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [newMissionVision, setNewMissionVision] = useState({
-    title: "",
-    description: "",
-  });
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [missionAndVision, setMissionAndVision] = useState("");
+  const [policyId, setPolicyId] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const closeUploadModal = () => {
-    setUploadModalOpen(false);
-    setNewMissionVision({ title: "", description: "" });
+  const user = useSelector((store) => store.auth);
+  const token = user?.user?.data?.token;
+
+  // Fetch mission and vision from backend
+  useEffect(() => {
+    if (!token) return;
+
+    setLoading(true);
+    axios
+      .get(GETAPI, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        const data = response?.data?.data?.[0];
+
+        if (data) {
+          setMissionAndVision(data.content || "");
+          setPolicyId(data.id || null);
+          setIsEditing(false);
+        } else {
+          setIsEditing(true);
+        }
+      })
+      .catch((error) =>
+        console.error("Error fetching mission and vision:", error)
+      )
+      .finally(() => setLoading(false));
+  }, [token]);
+
+  const handleSave = () => {
+    if (!token) return alert("Unauthorized! Please log in.");
+
+    setLoading(true);
+    const apiCall = policyId
+      ? axios.put(
+          `${PUTAPI}/${policyId}`,
+          { content: missionAndVision },
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+      : axios.post(
+          POSTAPI,
+          { content: missionAndVision },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+    apiCall
+      .then((response) => {
+        if (!policyId) setPolicyId(response.data?.data?.id);
+        setIsEditing(false);
+      })
+      .catch((error) =>
+        console.error("Error saving mission and vision:", error)
+      )
+      .finally(() => setLoading(false));
   };
 
-  const handlePost = () => {
-    setMissionAndVision([newMissionVision, ...missionAndVision]);
-    closeUploadModal();
-  };
-
-  const handleEdit = (item) => {
-    setSelectedItem(item);
-    setNewMissionVision(item);
-    setEditModalOpen(true);
-  };
-
-  const handleSaveEdit = () => {
-    const updatedList = missionAndVision.map((item) =>
-      item === selectedItem ? newMissionVision : item
-    );
-    setMissionAndVision(updatedList);
-    setEditModalOpen(false);
-  };
-
-  const handleView = (item) => {
-    setSelectedItem(item);
-    setViewModalOpen(true);
-  };
-
-  const toggleActiveStatus = (item) => {
-    if (item.isActive) {
-      alert("Are you sure to Inactive selected Mission & Vision");
-    } else {
-      alert("Are you sure to Active selected Mission & Vision");
-    }
-    const updatedList = missionAndVision.map((mv) =>
-      mv === item ? { ...mv, isActive: !mv.isActive } : mv
-    );
-    setMissionAndVision(updatedList);
+  const handleEdit = () => {
+    setIsEditing(true);
   };
 
   return (
     <Box sx={{ padding: 2 }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography
-          variant="h4"
-          gutterBottom
-          sx={{ textAlign: "center", marginBottom: 2 }}
-        >
-          Manage Mission & Vision
-        </Typography>
-
-        <Box sx={{ textAlign: "center", marginBottom: 3 }}>
-          <Button
-            variant="contained"
-            sx={{ backgroundColor: "#84764F" }}
-            onClick={() => setUploadModalOpen(true)}
-            startIcon={<CloudUploadIcon />}
-          >
-            Add
-          </Button>
-        </Box>
-      </Box>
-
+      <Typography variant="h4" gutterBottom sx={{ marginBottom: 2 }}>
+        Our Mission & Vision
+      </Typography>
       <hr color="#84764F" style={{ marginTop: "-8px" }} />
 
-      {missionAndVision.length === 0 ? (
-        <Typography
-          variant="h5"
-          sx={{ textAlign: "center", color: "#888", marginTop: 20 }}
-        >
-          No Mission & Vision Available
-        </Typography>
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", marginTop: 2 }}>
+          <CircularProgress />
+        </Box>
       ) : (
-        <TableContainer component={Paper} sx={{ marginTop: 2 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Title</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {missionAndVision.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>{item.title}</TableCell>
-                  <TableCell>{item.description}</TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={item.isActive || false}
-                      onChange={() => toggleActiveStatus(item)}
-                    />
-                    {item.isActive ? "Active" : "Inactive"}
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: "flex", justifyContent: "so" }}>
-                      <IconButton onClick={() => handleEdit(item)}>
-                        <Button
-                          variant="contained"
-                          sx={{ backgroundColor: "#84764F" }}
-                          startIcon={<Edit />}
-                        >
-                          Edit
-                        </Button>
-                      </IconButton>
-                      <Button
-                        variant="contained"
-                        sx={{ marginLeft: 1 }}
-                        onClick={() => handleView(item)}
-                      >
-                        View
-                      </Button>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-
-      {/* Add Modal */}
-      <Dialog
-        open={uploadModalOpen}
-        onClose={closeUploadModal}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogContent>
-          <Typography variant="h6" gutterBottom>
-            Add Mission & Vision
-          </Typography>
-          <TextField
-            fullWidth
-            label="Title"
-            value={newMissionVision.title}
-            onChange={(e) =>
-              setNewMissionVision({
-                ...newMissionVision,
-                title: e.target.value,
-              })
-            }
-            sx={{ marginBottom: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Description"
-            value={newMissionVision.description}
-            onChange={(e) =>
-              setNewMissionVision({
-                ...newMissionVision,
-                description: e.target.value,
-              })
-            }
-            multiline
-            rows={4}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={closeUploadModal} sx={{ color: "#84764F" }}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handlePost}
-            sx={{ backgroundColor: "#84764F" }}
-            disabled={
-              !newMissionVision.title.trim() ||
-              !newMissionVision.description.trim()
-            }
-          >
-            Post
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Edit Modal */}
-      <Dialog
-        open={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogContent>
-          <Typography variant="h6" gutterBottom>
-            Edit Mission & Vision
-          </Typography>
-          <TextField
-            fullWidth
-            label="Title"
-            value={newMissionVision.title}
-            onChange={(e) =>
-              setNewMissionVision({
-                ...newMissionVision,
-                title: e.target.value,
-              })
-            }
-            sx={{ marginBottom: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Description"
-            value={newMissionVision.description}
-            onChange={(e) =>
-              setNewMissionVision({
-                ...newMissionVision,
-                description: e.target.value,
-              })
-            }
-            multiline
-            rows={4}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setEditModalOpen(false)}
-            sx={{ color: "#808080" }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleSaveEdit}
-            sx={{ backgroundColor: "#84764F" }}
-          >
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* View Modal */}
-      <Dialog
-        open={viewModalOpen}
-        onClose={() => setViewModalOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogContent>
-          <Typography variant="h6" gutterBottom>
-            Mission & Vision Details
-          </Typography>
-          {selectedItem && (
-            <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                Title:
-              </Typography>
-              <Typography>{selectedItem.title}</Typography>
-
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: "bold", marginTop: 2 }}
+        <Paper elevation={3} sx={{ padding: 2, marginTop: 2 }}>
+          {isEditing ? (
+            <>
+              <TextField
+                label="Enter mission And Vision"
+                variant="outlined"
+                fullWidth
+                multiline
+                rows={10}
+                value={missionAndVision}
+                onChange={(e) => setMissionAndVision(e.target.value)}
+                sx={{ marginBottom: 2 }}
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSave}
+                disabled={loading}
               >
-                Description:
+                {policyId ? "Update" : "Save"}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Typography variant="body1">
+                {missionAndVision || "No mission and vision set."}
               </Typography>
-              <Typography>{selectedItem.description}</Typography>
-
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: "bold", marginTop: 2 }}
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleEdit}
+                sx={{ marginTop: 2 }}
               >
-                Status:
-              </Typography>
-              <Typography>
-                {selectedItem.isActive ? "Active" : "Inactive"}
-              </Typography>
-            </Box>
+                Edit
+              </Button>
+            </>
           )}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setViewModalOpen(false)}
-            sx={{ color: "#808080" }}
-          >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </Paper>
+      )}
     </Box>
   );
 };
