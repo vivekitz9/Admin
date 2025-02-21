@@ -82,7 +82,7 @@ const PrivacyPolicy = () => {
   return (
     <Box sx={{ padding: 2 }}>
       <Typography variant="h4" gutterBottom sx={{ marginBottom: 2 }}>
-        Privacy Policy
+        Our Privacy Policy
       </Typography>
       <hr color="#84764F" style={{ marginTop: "-8px" }} />
 
