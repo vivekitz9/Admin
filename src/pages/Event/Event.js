@@ -244,7 +244,7 @@ const Event = () => {
     if (token) {
       fetchAllEvent();
     }
-  }, [eventList]);
+  }, []);
 
   return (
     <Box sx={{ padding: 2 }}>

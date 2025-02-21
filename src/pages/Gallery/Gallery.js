@@ -45,6 +45,8 @@ const Gallery = () => {
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
 
+  const role = user?.user?.data?.role;
+
   // Fetch All Image
   const fetchAllImage = async () => {
     try {
@@ -141,20 +143,6 @@ const Gallery = () => {
       }
     }
   };
-
-  // Toggle Active/Inactive using Switch
-
-  // const handleToggle = (imageURL) => {
-  //   if (imageURL.active === 0) {
-  //     alert("Are you sure to Active selected Image");
-  //   } else {
-  //     alert("Are you sure to Inctive selected Image");
-  //   }
-  //   const updatedImages = images.map((img) =>
-  //     img.url === imageURL ? { ...img, active: img.active === 0 ? 1 : 0 } : img
-  //   );
-  //   setImages(updatedImages);
-  // };
 
   const handleToggle = async (image) => {
     console.log("image Data  :  ", image);
@@ -262,17 +250,28 @@ const Gallery = () => {
 
               <ListItemText
                 primary={image.title}
-                secondary={`Status: ${
-                  image.toggle === "1" ? "Active" : "Inactive"
-                }`}
+                secondary={
+                  <>
+                    Status:{" "}
+                    <Typography
+                      component="span"
+                      sx={{ color: image.toggle === "1" ? "#1686b8" : "red" }}
+                    >
+                      {image.toggle === "1" ? "Active" : "Inactive"}
+                    </Typography>
+                  </>
+                }
               />
 
               <ListItemSecondaryAction>
-                <Switch
-                  checked={image.toggle === "1"}
-                  onChange={() => handleToggle(image)}
-                  color="primary"
-                />
+                {role === "admin" && (
+                  <Switch
+                    checked={image.toggle === "1"}
+                    onChange={() => handleToggle(image)}
+                    color="primary"
+                  />
+                )}
+
                 <Button
                   onClick={() => {
                     handleEdit(image);

@@ -23,6 +23,9 @@ const PrivacyPolicy = () => {
 
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
+  const role = user?.user?.data?.role;
+
+  console.log(role);
 
   // Fetch privacy policy from backend
   useEffect(() => {

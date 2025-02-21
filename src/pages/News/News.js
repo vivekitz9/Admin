@@ -24,7 +24,7 @@ import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
 import axios from "axios";
 
-const GETAPI = `${baseURL}api/v1/news`;
+const GETAPI = `${baseURL}api/v1/admin/news`;
 const POSTAPI = `${baseURL}api/v1/news`;
 const PUTAPI = `${baseURL}api/v1/news`;
 
@@ -53,6 +53,9 @@ const News = () => {
 
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
+
+  const role = user?.user?.data?.role;
+  console.log(role);
 
   //Fetch All News
   const fetchAllNews = async () => {
@@ -247,7 +250,7 @@ const News = () => {
     if (token) {
       fetchAllNews();
     }
-  }, [newsList]);
+  }, []);
 
   return (
     <Box sx={{ padding: 2 }}>
@@ -302,12 +305,23 @@ const News = () => {
                     <TableCell>{news.title}</TableCell>
                     <TableCell>{news.newsDate}</TableCell>
                     <TableCell>
-                      <Switch
-                        checked={news.toggle === "1"}
-                        onChange={() => toggleActiveStatus(news)}
-                        color="primary"
-                      />
-                      {news.toggle === "1" ? "Active" : "Inactive"}
+                      {role === "admin" && (
+                        <Switch
+                          checked={news.toggle === "1"}
+                          onChange={() => toggleActiveStatus(news)}
+                          color="primary"
+                        />
+                      )}
+
+                      {/* {news.toggle === "1" ? "Active" : "Inactive"} */}
+
+                      <span
+                        style={{
+                          color: news.toggle === "1" ? "#1686b8" : "red",
+                        }}
+                      >
+                        {news.toggle === "1" ? "Active" : "Inactive"}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleEdit(news)}>
