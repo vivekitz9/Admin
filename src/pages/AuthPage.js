@@ -28,8 +28,13 @@ const AuthPage = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    console.log('user------>', user);
     if (user?.user?.success) {
-      navigate("/", { replace: true });
+      if(user?.user?.data?.role ===  "admin"){
+        navigate("/", { replace: true });
+      }else{
+        navigate("/subnews", { replace: true });
+      }
       toast("Welcome to Home");
     } else if (user?.user?.message) {
       toast(user?.user?.message);

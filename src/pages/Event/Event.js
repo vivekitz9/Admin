@@ -22,7 +22,7 @@ import {
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 import { Edit } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -33,6 +33,7 @@ import axios from "axios";
 const GETAPI = `${baseURL}api/v1/events`;
 const POSTAPI = `${baseURL}api/v1/events`;
 const PUTAPI = `${baseURL}api/v1/events`;
+const today = dayjs();
 
 const Event = () => {
   const [eventList, setEventList] = useState([]);
@@ -41,8 +42,8 @@ const Event = () => {
     eventTitle: "",
     eventDescription: "",
     eventDate: "",
-    eventStartTime: null,
-    eventEndTime: null,
+    eventStartTime: today,
+    eventEndTime: today,
     image: null,
   });
 
@@ -73,7 +74,10 @@ const Event = () => {
         },
       });
 
-      setEventList(response.data.data || []); // Extract users from API response
+      if (response?.data?.success) {
+        console.log('response=======>', response);
+        setEventList(response.data.data || []); // Extract users from API response
+      }
     } catch (err) {
       console.log(err.response?.data?.message);
     }
@@ -134,10 +138,12 @@ const Event = () => {
       formData.append("eventDate", newEvent.eventDate);
       formData.append("eventStartTime", newEvent.eventStartTime);
       formData.append("eventEndTime", newEvent.eventEndTime);
+
+
       if (newEvent.image) {
         formData.append("image", newEvent.image);
       }
-
+      console.log('formData------>', formData);
       console.log("form Data", formData);
 
       try {
@@ -244,7 +250,9 @@ const Event = () => {
     if (token) {
       fetchAllEvent();
     }
-  }, [eventList]);
+  }, []);
+
+  console.log('newEvent======>', editData);
 
   return (
     <Box sx={{ padding: 2 }}>
@@ -543,24 +551,26 @@ const Event = () => {
             />
 
             {/* Event Start Time Picker */}
-            <TimePicker
+            {/* <TimePicker
               label="Event Start Time"
-              value={newEvent.eventStartTime}
+              defaultValue={today}
               onChange={(newValue) =>
                 setNewEvent((prev) => ({ ...prev, eventStartTime: newValue }))
               }
               sx={{ marginBottom: 2 }}
-            />
+            /> */}
 
             {/* Event End Time Picker */}
-            <TimePicker
+            {/* <TimePicker
               label="Event End Time"
-              value={newEvent.eventEndTime}
+              defaultValue={today}
+              format="DD/MM/YYYY"
+
               onChange={(newValue) =>
                 setNewEvent((prev) => ({ ...prev, eventEndTime: newValue }))
               }
               sx={{ marginBottom: 2 }}
-            />
+            /> */}
 
             <Button variant="contained" component="label">
               Upload Image
@@ -639,7 +649,7 @@ const Event = () => {
             {/* Event Start Time Picker */}
             <TimePicker
               label="Event Start Time"
-              value={editData.eventStartTime}
+              defaultValue={dayjs(editData.eventStartTime)}
               onChange={(newValue) =>
                 setEditData((prev) => ({
                   ...prev,
@@ -652,7 +662,7 @@ const Event = () => {
             {/* Event End Time Picker */}
             <TimePicker
               label="Event End Time"
-              value={editData.eventEndTime}
+              defaultValue={dayjs(editData.eventEndTime)}
               onChange={(newValue) =>
                 setEditData((prev) => ({
                   ...prev,
@@ -738,190 +748,3 @@ const Event = () => {
 };
 
 export default Event;
-
-// Previous code
-// import React, { useEffect, useState } from "react";
-// import {
-//   Box,
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableContainer,
-//   TableHead,
-//   TableRow,
-//   Typography,
-//   Paper,
-//   Fab,
-//   Avatar,
-//   Switch,
-// } from "@mui/material";
-// import eventStyle from "../../styles/Event/event";
-// import AddEvent from "../../components/Events/AddEvent";
-// import EditIcon from "@mui/icons-material/Edit";
-// import AddBoxIcon from "@mui/icons-material/AddBox";
-// import Model from "../../components/Model";
-// import { Link } from "react-router-dom";
-// import { baseURL } from "../../assets/BaseUrl";
-// import axios from "axios";
-
-// const GETAPI = `${baseURL}api/v1/events`;
-// const PUTAPI = `${baseURL}api/v1/events`;
-
-// const Event = () => {
-//   const [isConfirm, setConfirm] = useState(false);
-//   const [open, setOpen] = useState(false);
-//   const [tableData, setTableData] = useState([
-//     // {
-//     //   id: 1,
-//     //   title: "first event",
-//     //   description: "campion for bihar",
-//     //   date: "15-01-2025",
-//     //   image: "",
-//     //   active: 0,
-//     // },
-//     // {
-//     //   id: 2,
-//     //   title: "second event",
-//     //   description: "campion for bihar",
-//     //   date: "15-01-2025",
-//     //   image: "",
-//     //   active: 0,
-//     // },
-//     // {
-//     //   id: 3,
-//     //   title: "third event",
-//     //   description: "campion for bihar",
-//     //   date: "15-01-2025",
-//     //   image: "",
-//     //   active: 0,
-//     // },
-//     // {
-//     //   id: 4,
-//     //   title: "four event",
-//     //   description: "campion for bihar",
-//     //   date: "15-01-2025",
-//     //   image: "",
-//     //   active: 0,
-//     // },
-//   ]);
-
-//   const fetchAllEvents = async () => {
-//     try {
-//       const response = await axios.get(GETAPI);
-
-//       setTableData(response.data.data || []); // Extract users from API response
-//     } catch (err) {
-//       console.log(err.response?.data?.message);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchAllEvents();
-//   }, []);
-
-//   const handleActive = async (id, active) => {
-//     //call api for active
-//     console.log("handleactive api");
-//     let response = true;
-//     // this is for test
-//     if (response) {
-//       setTableData((prev) =>
-//         prev.map((item) => {
-//           return item.id === id ? { ...item, active: !active } : item;
-//         })
-//       );
-//     }
-//   };
-
-//   const handleOpenModel = () => {
-//     setOpen(true);
-//   };
-//   const handleCloseModel = () => {
-//     setOpen(false);
-//   };
-
-//   const handleConfirm = async () => {
-//     setConfirm(true);
-//     handleCloseModel();
-//   };
-//   return (
-//     <Box sx={eventStyle.mainContianer}>
-//       {/* <AddEvent /> */}
-//       <Model
-//         handleConfirm={handleConfirm}
-//         handleCloseModel={handleCloseModel}
-//         open={open}
-//       />
-//       {tableData.length === 0 ? (
-//         <AddEvent />
-//       ) : (
-//         <Link to={"add-event"}>
-//           <Fab
-//             variant="extended"
-//             size="medium"
-//             color="primary"
-//             sx={{ marginBottom: "10px" }}
-//           >
-//             <AddBoxIcon sx={{ mr: 1 }} />
-//             Add Event
-//           </Fab>
-//         </Link>
-//       )}
-//       {tableData.length !== 0 && (
-//         <TableContainer component={Paper}>
-//           <Table>
-//             <TableHead>
-//               <TableRow>
-//                 <TableCell>
-//                   <Typography>Title</Typography>
-//                 </TableCell>
-//                 <TableCell>Description</TableCell>
-//                 <TableCell>Date </TableCell>
-//                 <TableCell>Image</TableCell>
-//                 <TableCell>Status</TableCell>
-//                 <TableCell>Action</TableCell>
-//               </TableRow>
-//             </TableHead>
-//             <TableBody>
-//               {tableData.map((data) => (
-//                 <TableRow key={data.id}>
-//                   <TableCell>{data.eventTitle}</TableCell>
-//                   <TableCell>{data.eventDescription}</TableCell>
-//                   <TableCell>{data.eventDate}</TableCell>
-//                   <TableCell>
-//                     <Avatar
-//                       variant="square"
-//                       src={data.image}
-//                       sx={{
-//                         width: 120,
-//                         height: 120,
-//                         borderRadius: "0.3rem",
-//                       }}
-//                       alt="event image"
-//                     />
-//                   </TableCell>
-//                   <TableCell>
-//                     <Switch
-//                       color="secondary"
-//                       checked={data.active}
-//                       onChange={() => handleActive(data.id, data.active)}
-//                       onClick={handleOpenModel}
-//                     />
-//                   </TableCell>
-//                   <TableCell>
-//                     <Fab size="small" variant="extended" component="label">
-//                       <EditIcon sx={{ mr: 1 }} />
-//                       <Typography onClick={e}> Edit</Typography>
-//                     </Fab>
-//                   </TableCell>
-//                 </TableRow>
-//               ))}
-//             </TableBody>
-//           </Table>
-//         </TableContainer>
-//       )}
-//     </Box>
-//   );
-// };
-
-// export default Event;

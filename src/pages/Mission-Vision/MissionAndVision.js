@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   TextField,
   Button,
@@ -10,6 +10,7 @@ import {
 import { baseURL } from "../../assets/BaseUrl";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import JoditEditor from 'jodit-react';
 
 const GETAPI = `${baseURL}api/v1/mission`;
 const POSTAPI = `${baseURL}api/v1/mission`;
@@ -20,7 +21,7 @@ const MissionAndVision = () => {
   const [policyId, setPolicyId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const editor = useRef(null);
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
 
@@ -58,15 +59,15 @@ const MissionAndVision = () => {
     setLoading(true);
     const apiCall = policyId
       ? axios.put(
-          `${PUTAPI}/${policyId}`,
-          { content: missionAndVision },
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
+        `${PUTAPI}/${policyId}`,
+        { content: missionAndVision },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
       : axios.post(
-          POSTAPI,
-          { content: missionAndVision },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        POSTAPI,
+        { content: missionAndVision },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
     apiCall
       .then((response) => {
@@ -83,6 +84,11 @@ const MissionAndVision = () => {
     setIsEditing(true);
   };
 
+  const config = useMemo(() => ({
+    readonly: false, // all options from https://xdsoft.net/jodit/docs/,
+    placeholder: 'Start typings...'
+  }), []);
+
   return (
     <Box sx={{ padding: 2 }}>
       <Typography variant="h4" gutterBottom sx={{ marginBottom: 2 }}>
@@ -98,7 +104,15 @@ const MissionAndVision = () => {
         <Paper elevation={3} sx={{ padding: 2, marginTop: 2 }}>
           {isEditing ? (
             <>
-              <TextField
+              <JoditEditor
+                ref={editor}
+                value={missionAndVision}
+                config={config}
+                tabIndex={5} // tabIndex of textarea
+                onBlur={newContent => setMissionAndVision(newContent)}
+                onChange={newContent => { }}
+              />
+              {/* <TextField
                 label="Enter mission And Vision"
                 variant="outlined"
                 fullWidth
@@ -107,7 +121,7 @@ const MissionAndVision = () => {
                 value={missionAndVision}
                 onChange={(e) => setMissionAndVision(e.target.value)}
                 sx={{ marginBottom: 2 }}
-              />
+              /> */}
               <Button
                 variant="contained"
                 color="primary"

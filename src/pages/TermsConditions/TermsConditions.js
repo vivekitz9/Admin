@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   TextField,
   Button,
@@ -10,6 +10,8 @@ import {
 import { baseURL } from "../../assets/BaseUrl";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import JoditEditor from 'jodit-react';
+
 
 const GETAPI = `${baseURL}api/v1/termCondition`;
 const POSTAPI = `${baseURL}api/v1/termCondition`;
@@ -23,6 +25,7 @@ const TermsConditions = () => {
 
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
+  const editor = useRef(null);
 
   // Fetch privacy policy from backend
   useEffect(() => {
@@ -58,15 +61,15 @@ const TermsConditions = () => {
     setLoading(true);
     const apiCall = policyId
       ? axios.put(
-          `${PUTAPI}/${policyId}`,
-          { content: termCondition },
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
+        `${PUTAPI}/${policyId}`,
+        { content: termCondition },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
       : axios.post(
-          POSTAPI,
-          { content: termCondition },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        POSTAPI,
+        { content: termCondition },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
     apiCall
       .then((response) => {
@@ -83,6 +86,12 @@ const TermsConditions = () => {
     setIsEditing(true);
   };
 
+  const config = useMemo(() => ({
+    readonly: false, // all options from https://xdsoft.net/jodit/docs/,
+    placeholder: 'Start typings...'
+  }), []);
+
+
   return (
     <Box sx={{ padding: 2 }}>
       <Typography variant="h4" gutterBottom sx={{ marginBottom: 2 }}>
@@ -98,7 +107,15 @@ const TermsConditions = () => {
         <Paper elevation={3} sx={{ padding: 2, marginTop: 2 }}>
           {isEditing ? (
             <>
-              <TextField
+              <JoditEditor
+                ref={editor}
+                value={termCondition}
+                config={config}
+                tabIndex={5} // tabIndex of textarea
+                onBlur={newContent => setTermCondition(newContent)}
+                onChange={newContent => { }}
+              />
+              {/* <TextField
                 label="Enter Terms & Conditions"
                 variant="outlined"
                 fullWidth
@@ -107,7 +124,7 @@ const TermsConditions = () => {
                 value={termCondition}
                 onChange={(e) => setTermCondition(e.target.value)}
                 sx={{ marginBottom: 2 }}
-              />
+              /> */}
               <Button
                 variant="contained"
                 color="primary"
@@ -119,8 +136,11 @@ const TermsConditions = () => {
             </>
           ) : (
             <>
-              <Typography variant="body1">
-                {termCondition || "No Terms & Conditions set."}
+              <Typography variant="body1" >
+                {termCondition ?
+                  <div dangerouslySetInnerHTML={{ __html: termCondition }}></div>
+                  : "No Terms & Conditions set."
+                }
               </Typography>
               <Button
                 variant="contained"

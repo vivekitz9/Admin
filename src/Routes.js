@@ -54,16 +54,15 @@ const router = createBrowserRouter(
         <Route path="gallery" element={<Gallery />} />
         <Route path="member" element={<Member />} />
         <Route path="news" element={<News />} />
+        <Route path="subnews" element={<News />} />
         <Route path="write-to-me" element={<ConnectWithMe />} />
         <Route path="all-users" element={<AllUsers />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="terms-conditions" element={<TermsConditions />} />
         <Route path="help-support" element={<HelpSupport />} />
-
         <Route path="events/add-event" element={<AddEvent />} />
         <Route path="banner" element={<Banner />} />
         <Route path="banner/add-banner" element={<AddBanner />} />
-
         {/* <Route path="*" element={<ErrorPage />} /> */}
       </Route>
       <Route path="*" element={<ErrorPage />} />

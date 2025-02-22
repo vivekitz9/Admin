@@ -24,9 +24,9 @@ import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
 import axios from "axios";
 
-const GETAPI = `${baseURL}api/v1/news`;
+const GETAPI = `${baseURL}api/v1/admin/news`;
 const POSTAPI = `${baseURL}api/v1/news`;
-const PUTAPI = `${baseURL}api/v1/news`;
+const PUTAPI = `${baseURL}api/v1/admin/news`;
 
 const News = () => {
   const [newsList, setNewsList] = useState([]);
@@ -189,8 +189,7 @@ const News = () => {
 
     const newStatus = news.toggle === "0" ? "1" : "0"; // Determine new status
     const confirmation = window.confirm(
-      `Are you sure you want to ${
-        newStatus === "1" ? "activate" : "deactivate"
+      `Are you sure you want to ${newStatus === "1" ? "activate" : "deactivate"
       } this news?`
     );
 
@@ -203,6 +202,7 @@ const News = () => {
     formData.append("title", news.title);
     formData.append("description", news.description);
     formData.append("newsDate", news.newsDate);
+    formData.append("isVisible", true);
     // Handle image properly
     if (news.image && typeof news.image !== "string") {
       formData.append("image", news.image); // If it's a File object
@@ -247,7 +247,7 @@ const News = () => {
     if (token) {
       fetchAllNews();
     }
-  }, [newsList]);
+  }, []);
 
   return (
     <Box sx={{ padding: 2 }}>

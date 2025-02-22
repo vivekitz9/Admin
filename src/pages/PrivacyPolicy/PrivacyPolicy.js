@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   TextField,
   Button,
@@ -10,6 +10,7 @@ import {
 import { baseURL } from "../../assets/BaseUrl";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import JoditEditor from 'jodit-react';
 
 const GETAPI = `${baseURL}api/v1/privacyPolicy`;
 const POSTAPI = `${baseURL}api/v1/privacyPolicy`;
@@ -20,7 +21,7 @@ const PrivacyPolicy = () => {
   const [policyId, setPolicyId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const editor = useRef(null);
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
 
@@ -56,15 +57,15 @@ const PrivacyPolicy = () => {
     setLoading(true);
     const apiCall = policyId
       ? axios.put(
-          `${PUTAPI}/${policyId}`,
-          { content: privacyPolicy },
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
+        `${PUTAPI}/${policyId}`,
+        { content: privacyPolicy },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
       : axios.post(
-          POSTAPI,
-          { content: privacyPolicy },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        POSTAPI,
+        { content: privacyPolicy },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
     apiCall
       .then((response) => {
@@ -78,6 +79,12 @@ const PrivacyPolicy = () => {
   const handleEdit = () => {
     setIsEditing(true);
   };
+
+  const config = useMemo(() => ({
+    readonly: false, // all options from https://xdsoft.net/jodit/docs/,
+    placeholder: 'Start typings...'
+  }), []);
+
 
   return (
     <Box sx={{ padding: 2 }}>
@@ -94,7 +101,7 @@ const PrivacyPolicy = () => {
         <Paper elevation={3} sx={{ padding: 2, marginTop: 2 }}>
           {isEditing ? (
             <>
-              <TextField
+              {/* <TextField
                 label="Enter Privacy Policy"
                 variant="outlined"
                 fullWidth
@@ -103,6 +110,15 @@ const PrivacyPolicy = () => {
                 value={privacyPolicy}
                 onChange={(e) => setPrivacyPolicy(e.target.value)}
                 sx={{ marginBottom: 2 }}
+              /> */}
+
+              <JoditEditor
+                ref={editor}
+                value={privacyPolicy}
+                config={config}
+                tabIndex={5} // tabIndex of textarea
+                onBlur={newContent => setPrivacyPolicy(newContent)}
+                onChange={newContent => { }}
               />
               <Button
                 variant="contained"
@@ -116,7 +132,9 @@ const PrivacyPolicy = () => {
           ) : (
             <>
               <Typography variant="body1">
-                {privacyPolicy || "No privacy policy set."}
+                {privacyPolicy ? <div dangerouslySetInnerHTML={{ __html: privacyPolicy }}></div>
+                  : "No privacy policy set."
+                }
               </Typography>
               <Button
                 variant="contained"
