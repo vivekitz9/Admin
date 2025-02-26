@@ -24,6 +24,7 @@ import AddEvent from "./components/Events/AddEvent";
 import Event from "./pages/Event/Event";
 import Banner from "./pages/Banner/Banner";
 import AddBanner from "./components/Banner/AddBanner";
+import MemberCard from "./components/MemberCard";
 
 const ProtectedRoute = ({ children }) => {
   const user = useSelector((store) => store.auth);
@@ -63,6 +64,7 @@ const router = createBrowserRouter(
         <Route path="events/add-event" element={<AddEvent />} />
         <Route path="banner" element={<Banner />} />
         <Route path="banner/add-banner" element={<AddBanner />} />
+        <Route path="member-card" element={<MemberCard />} />
 
         {/* <Route path="*" element={<ErrorPage />} /> */}
       </Route>
