@@ -21,7 +21,6 @@ import {
 
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import dayjs from 'dayjs';
 
 import { Edit } from "@mui/icons-material";
@@ -45,6 +44,7 @@ const Event = () => {
     eventStartTime: today,
     eventEndTime: today,
     image: null,
+    uri: ''
   });
 
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -55,6 +55,7 @@ const Event = () => {
     eventStartTime: null,
     eventEndTime: null,
     image: null,
+    uri: ''
   });
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -139,7 +140,7 @@ const Event = () => {
       formData.append("eventStartTime", newEvent.eventStartTime);
       formData.append("eventEndTime", newEvent.eventEndTime);
 
-
+      formData.append("uri", newEvent.eventEndTime);
       if (newEvent.image) {
         formData.append("image", newEvent.image);
       }
@@ -550,8 +551,18 @@ const Event = () => {
               sx={{ marginBottom: 2 }}
             />
 
-            {/* Event Start Time Picker */}
-            {/* <TimePicker
+            <Box fullWidth>
+              {/* Event Start Time Picker */}
+              <TextField
+
+                label="Event Start Time"
+                value={newEvent.eventStartTime}
+                onChange={(e) =>
+                  setNewEvent((prev) => ({ ...prev, eventStartTime: e.target.value }))
+                }
+                sx={{ marginBottom: 2, width: '45%' }}
+              />
+              {/* <TimePicker
               label="Event Start Time"
               defaultValue={today}
               onChange={(newValue) =>
@@ -560,8 +571,17 @@ const Event = () => {
               sx={{ marginBottom: 2 }}
             /> */}
 
-            {/* Event End Time Picker */}
-            {/* <TimePicker
+              {/* Event End Time Picker */}
+              <TextField
+                // fullWidth
+                label="Event End Time"
+                value={newEvent.eventEndTime}
+                onChange={(e) =>
+                  setNewEvent((prev) => ({ ...prev, eventEndTime: e.target.value }))
+                }
+                sx={{ marginBottom: 2, width: '45%', marginLeft: 5 }}
+              />
+              {/* <TimePicker
               label="Event End Time"
               defaultValue={today}
               format="DD/MM/YYYY"
@@ -571,6 +591,17 @@ const Event = () => {
               }
               sx={{ marginBottom: 2 }}
             /> */}
+            </Box>
+
+            <TextField
+              fullWidth
+              label="Uri"
+              value={newEvent.uri}
+              onChange={(e) =>
+                setNewEvent((prev) => ({ ...prev, uri: e.target.value }))
+              }
+              sx={{ marginBottom: 2 }}
+            />
 
             <Button variant="contained" component="label">
               Upload Image
@@ -647,7 +678,21 @@ const Event = () => {
             />
 
             {/* Event Start Time Picker */}
-            <TimePicker
+            <TextField
+              fullWidth
+              label="Event Start Time"
+              value={editData.eventStartTime}
+              onChange={(e) =>
+                setEditData((prev) => ({
+                  ...prev,
+                  eventStartTime: e.target.value,
+                }))
+              }
+              multiline
+              rows={7}
+              sx={{ marginBottom: 2 }}
+            />
+            {/* <TimePicker
               label="Event Start Time"
               defaultValue={dayjs(editData.eventStartTime)}
               onChange={(newValue) =>
@@ -657,10 +702,25 @@ const Event = () => {
                 }))
               }
               sx={{ marginBottom: 2 }}
-            />
+            /> */}
 
             {/* Event End Time Picker */}
-            <TimePicker
+
+            <TextField
+              fullWidth
+              label="Event End Time"
+              value={editData.eventEndTime}
+              onChange={(e) =>
+                setEditData((prev) => ({
+                  ...prev,
+                  eventEndTime: e.target.value,
+                }))
+              }
+              multiline
+              rows={7}
+              sx={{ marginBottom: 2 }}
+            />
+            {/* <TimePicker
               label="Event End Time"
               defaultValue={dayjs(editData.eventEndTime)}
               onChange={(newValue) =>
@@ -668,6 +728,16 @@ const Event = () => {
                   ...prev,
                   eventEndTime: newValue.format("hh:mm A"),
                 }))
+              }
+              sx={{ marginBottom: 2 }}
+            /> */}
+
+            <TextField
+              fullWidth
+              label="Uri"
+              value={newEvent.uri}
+              onChange={(e) =>
+                setEditData((prev) => ({ ...prev, uri: e.target.value }))
               }
               sx={{ marginBottom: 2 }}
             />

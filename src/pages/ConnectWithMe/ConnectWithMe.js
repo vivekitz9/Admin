@@ -7,111 +7,127 @@ import {
   ListItemText,
   Avatar,
   TextField,
-  Button,
   IconButton,
   Paper,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
-// import { io } from "socket.io-client";
-// export const socket = io("https://shivdeeplande.com:8001/");
-
-// Sample user list
-const users = [
-  {
-    id: 1,
-    name: "Alice",
-    lastMessage: "Hey, how are you?",
-    avatar: "https://i.pravatar.cc/150?img=1",
-  },
-  {
-    id: 2,
-    name: "Bob",
-    lastMessage: "Let's catch up tomorrow!",
-    avatar: "https://i.pravatar.cc/150?img=2",
-  },
-  {
-    id: 3,
-    name: "Charlie",
-    lastMessage: "Can you send the file?",
-    avatar: "https://i.pravatar.cc/150?img=3",
-  },
-  {
-    id: 4,
-    name: "jone",
-    lastMessage: "Can you send the file?",
-    avatar: "https://i.pravatar.cc/150?img=3",
-  },
-  {
-    id: 5,
-    name: "Mayank",
-    lastMessage: "Can you send the file?",
-    avatar: "https://i.pravatar.cc/150?img=3",
-  },
-  {
-    id: 6,
-    name: "raj",
-    lastMessage: "Can you send the file?",
-    avatar: "https://i.pravatar.cc/150?img=3",
-  },
-  {
-    id: 7,
-    name: "raj2",
-    lastMessage: "Can you send the file?",
-    avatar: "https://i.pravatar.cc/150?img=3",
-  },
-  {
-    id: 8,
-    name: "raj3",
-    lastMessage: "Can you send the file?",
-    avatar: "https://i.pravatar.cc/150?img=3",
-  },
-  {
-    id: 9,
-    name: "raj4",
-    lastMessage: "Can you send the file?",
-    avatar: "https://i.pravatar.cc/150?img=3",
-  },
-];
+import { baseURL } from "../../assets/BaseUrl";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
 const ConnectWithMe = () => {
   const [selectedUser, setSelectedUser] = useState(null);
-  const [message, setMessage] = useState("");
-  const [chatHistory, setChatHistory] = useState({});
+  const [messageText, setMessageText] = useState("");
+  // const [chatHistory, setChatHistory] = useState({});
   const chatEndRef = useRef(null);
+  const user = useSelector((store) => store.auth);
+  const token = user?.user?.data?.token;
+  const [userData, setUserData] = useState([])
+  const [messages, setMessages] = useState([]);
+  const [sendSuccess, setSendSuccess] = useState(false)
+
 
   // Open chat with a selected user
   const handleSelectUser = (user) => {
     setSelectedUser(user);
-    setChatHistory((prev) => ({ ...prev, [user.id]: prev[user.id] || [] }));
+    setMessages([]);
   };
-
   // Send message
-  const handleSendMessage = () => {
-    if (message.trim() && selectedUser) {
-      const newMessage = { sender: "You", text: message };
-      const userResponse = { sender: selectedUser.name, text: "Got it!" }; // Mock response
+  const handleSendMessage = async () => {
+    if (messageText.trim() && selectedUser) {
+      const newMessage = { sender: user?.user?.data?.fullName, text: messageText, id: user?.user?.data?.id };
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+      try {
+        const photo = {
+          // uri: imageUri,
+          type: 'image/jpeg',
+          name: 'test.jpg',
+        };
+        const payload = new FormData();
+        payload.append('senderId', user?.user?.data?.id);
+        payload.append('receiverId', selectedUser?.id);
+        payload.append('message', messageText);
+        console.log('payload----->', payload);
 
-      setChatHistory((prev) => ({
-        ...prev,
-        [selectedUser.id]: [...(prev[selectedUser.id] || []), newMessage],
-      }));
+        await fetch(baseURL + "api/v1/chat/send", {
+          method: "POST",
+          body: payload,
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            Accept: "*",
+          },
+        }).then(response => {
+          console.log('res----->', response);
+          return response.json();
+        }).then(res => {
+          if (res?.success) {
+            setSendSuccess(true)
+            setMessages([]);
+            setMessageText('')
+          }
+        })
+      } catch (error) {
+        console.log('error----->', error);
+      }
 
-      setMessage("");
-
-      // Simulated reply after 1 second
-      setTimeout(() => {
-        setChatHistory((prev) => ({
-          ...prev,
-          [selectedUser.id]: [...(prev[selectedUser.id] || []), userResponse],
-        }));
-      }, 1000);
     }
   };
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatHistory]);
+  }, [messages]);
 
+  useEffect(() => {
+    async function fetchUserList() {
+      try {
+        const response = await axios.get(baseURL + "api/v1/chat/admin/" + user?.user?.data?.id, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response?.data?.success) {
+          setUserData(response?.data?.data?.data)
+        }
+      } catch (error) {
+        console.log('error get user------>', error);
+      }
+
+    }
+    fetchUserList()
+  }, [])
+
+  useEffect(() => {
+    async function handleGetMessage() {
+      try {
+        const response = await axios.get(baseURL + "api/v1/chat/user/" + selectedUser?.id + '/' + user?.user?.data?.id, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response?.data?.success) {
+          if (response?.data?.data?.Items?.length > 0) {
+            response?.data?.data?.Items?.map((item) => {
+              if (item?.senderId === user?.user?.data?.id) {
+                const newMessage = { sender: user?.user?.data?.fullName, text: item?.text, id: item?.senderId }
+                setMessages((prevMessages) => [...prevMessages, newMessage]);
+              } else {
+                const userResponse = { sender: selectedUser.fullName, text: item?.text, id: item?.senderId }
+                setMessages((prevMessages) => [...prevMessages, userResponse]);
+              }
+            })
+          }
+        }
+      } catch (error) {
+        console.log('error get user------>', error);
+      }
+    }
+    handleGetMessage();
+  }, [selectedUser, sendSuccess])
+
+
+
+
+  console.log('userData---->', userData);
   return (
     <Box
       sx={{
@@ -133,14 +149,14 @@ const ConnectWithMe = () => {
           Chats
         </Typography>
         <List>
-          {users.map((user) => (
+          {userData?.length !== 0 && userData?.map((item) => (
             <ListItem
-              key={user.id}
+              key={item.id}
               button
-              onClick={() => handleSelectUser(user)}
+              onClick={() => handleSelectUser(item)}
             >
-              <Avatar src={user.avatar} sx={{ marginRight: 2 }} />
-              <ListItemText primary={user.name} secondary={user.lastMessage} />
+              <Avatar src={item?.image} sx={{ marginRight: 2 }} />
+              <ListItemText primary={item?.fullName} secondary={item.lastMessage} />
             </ListItem>
           ))}
         </List>
@@ -161,7 +177,7 @@ const ConnectWithMe = () => {
               variant="h6"
               sx={{ textAlign: "center", padding: 2, background: "#f5f5f5" }}
             >
-              Chat with {selectedUser.name}
+              Chat with {selectedUser?.fullName}
             </Typography>
 
             {/* Chat Messages */}
@@ -175,20 +191,19 @@ const ConnectWithMe = () => {
                 flexDirection: "column",
               }}
             >
-              {chatHistory[selectedUser.id]?.map((msg, index) => (
+              {messages?.reverse().map((msg, index) => (
                 <Box
                   key={index}
                   sx={{
                     display: "flex",
-                    justifyContent:
-                      msg.sender === "You" ? "flex-end" : "flex-start",
+                    justifyContent: msg?.id === user?.user?.data?.id ? "flex-end" : "flex-start",
                     marginBottom: 1,
                   }}
                 >
                   <Box
                     sx={{
-                      background: msg.sender === "You" ? "#84764F" : "#e0e0e0",
-                      color: msg.sender === "You" ? "#fff" : "#000",
+                      background: msg?.id === user?.user?.data?.id ? "#84764F" : "#e0e0e0",
+                      color: msg?.id === user?.user?.data?.id ? "#fff" : '#000',
                       padding: 1,
                       borderRadius: "10px",
                       maxWidth: "75%",
@@ -198,6 +213,7 @@ const ConnectWithMe = () => {
                   </Box>
                 </Box>
               ))}
+
               <div ref={chatEndRef} />
             </Box>
 
@@ -214,8 +230,8 @@ const ConnectWithMe = () => {
                 fullWidth
                 variant="outlined"
                 placeholder="Type a message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
