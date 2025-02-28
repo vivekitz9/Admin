@@ -31,9 +31,9 @@ const SideMenu = () => {
 
   const logout = () => {
     localStorage.clear();
-    // navigate("/login");
     window.location.href = "/login";
   };
+
   const navItems = [
     { text: "Home", icon: <HomeIcon />, path: "/" },
     { text: "View Users", icon: <PeopleIcon />, path: "all-users" },
@@ -58,6 +58,7 @@ const SideMenu = () => {
       action: logout,
     },
   ];
+
   const navItemsForSubadmin = [
     { text: "Home", icon: <HomeIcon />, path: "/" },
     { text: "News", icon: <AnnouncementIcon />, path: "news" },

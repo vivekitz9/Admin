@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import html2canvas from "html2canvas";
 import DownloadIcon from "@mui/icons-material/Download";
-// import ShareIcon from "@mui/icons-material/Share";
 import jsPDF from "jspdf";
 import { useLocation } from "react-router-dom";
 import logo from "../assets/images/shivdeepLogo.jpeg";
