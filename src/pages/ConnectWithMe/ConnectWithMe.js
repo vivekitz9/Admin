@@ -105,8 +105,8 @@ const ConnectWithMe = () => {
           },
         });
         if (response?.data?.success) {
-          if (response?.data?.data?.Items?.length > 0) {
-            response?.data?.data?.Items?.map((item) => {
+          if (response?.data?.data?.length > 0) {
+            response?.data?.data?.map((item) => {
               if (item?.senderId === user?.user?.data?.id) {
                 const newMessage = { sender: user?.user?.data?.fullName, text: item?.text, id: item?.senderId }
                 setMessages((prevMessages) => [...prevMessages, newMessage]);
@@ -127,7 +127,7 @@ const ConnectWithMe = () => {
 
 
 
-  console.log('userData---->', userData);
+  console.log('messages---->', messages);
   return (
     <Box
       sx={{
@@ -191,7 +191,7 @@ const ConnectWithMe = () => {
                 flexDirection: "column",
               }}
             >
-              {messages?.reverse().map((msg, index) => (
+              {messages?.map((msg, index) => (
                 <Box
                   key={index}
                   sx={{

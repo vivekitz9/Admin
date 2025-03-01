@@ -237,7 +237,7 @@ const Banner = () => {
     if (token) {
       fetchAllBanners();
     }
-  }, [banners]);
+  }, []);
 
   return (
     <Box sx={{ padding: 2 }}>
