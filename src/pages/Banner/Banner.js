@@ -52,6 +52,8 @@ const Banner = () => {
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
 
+  const role = user?.user?.data?.role;
+
   const fetchAllBanners = async () => {
     try {
       const response = await axios.get(GETAPI, {
@@ -304,12 +306,22 @@ const Banner = () => {
                       />
                     </TableCell>
                     <TableCell>
-                      <Switch
-                        checked={banner.isActive === "1"}
-                        onChange={() => toggleActiveStatus(banner)}
-                        color="primary"
-                      />
-                      {banner.isActive === "1" ? "Active" : "Inactive"}
+                      {role === "admin" && (
+                        <Switch
+                          checked={banner.isActive === "1"}
+                          onChange={() => toggleActiveStatus(banner)}
+                          color="primary"
+                        />
+                      )}
+
+                      {/* {banner.isActive === "1" ? "Active" : "Inactive"} */}
+                      <span
+                        style={{
+                          color: banner.isActive === "1" ? "#1686b8" : "red",
+                        }}
+                      >
+                        {banner.isActive === "1" ? "Active" : "Inactive"}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleEdit(banner)}>

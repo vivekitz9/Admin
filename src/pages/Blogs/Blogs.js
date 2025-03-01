@@ -51,6 +51,9 @@ const Blogs = () => {
 
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
+  const role = user?.user?.data?.role;
+
+  console.log(role);
 
   const fetchAllBlogs = async () => {
     try {
@@ -236,7 +239,7 @@ const Blogs = () => {
     if (token) {
       fetchAllBlogs();
     }
-  }, [blogs]);
+  }, []);
 
   return (
     <Box sx={{ padding: 2 }}>
@@ -303,12 +306,22 @@ const Blogs = () => {
                       />
                     </TableCell>
                     <TableCell>
-                      <Switch
-                        checked={blog.toggle === "1"}
-                        onChange={() => toggleActiveStatus(blog)}
-                        color="primary"
-                      />
-                      {blog.toggle === "1" ? "Active" : "Inactive"}
+                      {role === "admin" && (
+                        <Switch
+                          checked={blog.toggle === "1"}
+                          onChange={() => toggleActiveStatus(blog)}
+                          color="primary"
+                        />
+                      )}
+
+                      {/* {blog.toggle === "1" ? "Active" : "Inactive"} */}
+                      <span
+                        style={{
+                          color: blog.toggle === "1" ? "#1686b8" : "red",
+                        }}
+                      >
+                        {blog.toggle === "1" ? "Active" : "Inactive"}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleEdit(blog)}>

@@ -253,8 +253,6 @@ const Event = () => {
     }
   }, []);
 
-  console.log('newEvent======>', editData);
-
   return (
     <Box sx={{ padding: 2 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
