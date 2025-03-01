@@ -54,6 +54,9 @@ const News = () => {
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
 
+  const role = user?.user?.data?.role;
+  console.log(role);
+
   //Fetch All News
   const fetchAllNews = async () => {
     try {
@@ -302,12 +305,23 @@ const News = () => {
                     <TableCell>{news.title}</TableCell>
                     <TableCell>{news.newsDate}</TableCell>
                     <TableCell>
-                      <Switch
-                        checked={news.toggle === "1"}
-                        onChange={() => toggleActiveStatus(news)}
-                        color="primary"
-                      />
-                      {news.toggle === "1" ? "Active" : "Inactive"}
+                      {role === "admin" && (
+                        <Switch
+                          checked={news.toggle === "1"}
+                          onChange={() => toggleActiveStatus(news)}
+                          color="primary"
+                        />
+                      )}
+
+                      {/* {news.toggle === "1" ? "Active" : "Inactive"} */}
+
+                      <span
+                        style={{
+                          color: news.toggle === "1" ? "#1686b8" : "red",
+                        }}
+                      >
+                        {news.toggle === "1" ? "Active" : "Inactive"}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleEdit(news)}>

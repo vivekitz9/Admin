@@ -177,7 +177,7 @@ const AllUsers = () => {
     if (token) {
       fetchAllUsers();
     }
-  }, [token]);
+  }, []);
 
   return (
     <Box sx={{ padding: 2 }}>

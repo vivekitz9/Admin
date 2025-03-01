@@ -14,7 +14,6 @@ let persistor = persistStore(store); //Persist
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      {/* <App /> */}
       <PersistGate persistor={persistor}>
         <App />
       </PersistGate>
