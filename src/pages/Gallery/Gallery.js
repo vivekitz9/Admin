@@ -79,6 +79,7 @@ const Gallery = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setEditData((prev) => ({ ...prev, file }));
+    setNewImage((prev) => ({ ...prev, file }));
   };
 
   // Handle Post Image
@@ -97,7 +98,7 @@ const Gallery = () => {
           },
         });
 
-        if (response.status === 200) {
+        if (response?.status === 200) {
           fetchAllImage();
           closeUploadModal();
         }
@@ -196,6 +197,8 @@ const Gallery = () => {
       fetchAllImage();
     }
   }, []);
+
+  console.log('newImage---->', newImage);
 
   return (
     <Box sx={{ padding: 2 }}>
