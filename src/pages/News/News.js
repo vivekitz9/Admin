@@ -20,13 +20,17 @@ import {
 } from "@mui/material";
 import { Edit } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
 import axios from "axios";
 
 const GETAPI = `${baseURL}api/v1/admin/news`;
 const POSTAPI = `${baseURL}api/v1/news`;
-const PUTAPI = `${baseURL}api/v1/admin/news`;
+const PUTAPI = `${baseURL}api/v1/news`;
+const DELETEAPI = `${baseURL}api/v1/news`;
+
+const POSTNOTIFICATION = `${baseURL}api/v1/notification/sendNotification`;
 
 const News = () => {
   const [newsList, setNewsList] = useState([]);
@@ -53,9 +57,9 @@ const News = () => {
 
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
+  const userName = user?.user?.data?.userName;
 
   const role = user?.user?.data?.role;
-  console.log(role);
 
   //Fetch All News
   const fetchAllNews = async () => {
@@ -153,7 +157,7 @@ const News = () => {
 
     const updatedNewsList = {
       title: editData.title,
-      content: editData.description,
+      description: editData.description,
       newsDate: editData.newsDate,
       image: editData.file
         ? URL.createObjectURL(editData.file)
@@ -181,18 +185,107 @@ const News = () => {
     }
   };
 
+  // ****************************  Delete News function  *********************************
+
+  const handleDelete = async (news) => {
+    if (!news?.id) {
+      console.error("Invalid news object: Missing ID");
+      return;
+    }
+
+    if (!token) {
+      console.error("Authorization token is missing!");
+      return;
+    }
+
+    // Show confirmation alert
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete this news?`
+    );
+    if (!isConfirmed) {
+      console.log("Delete action canceled.");
+      return;
+    }
+
+    try {
+      await axios.delete(`${DELETEAPI}/${news.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      alert(`News with ID ${news.id} deleted successfully.`); // Show success alert
+      fetchAllNews();
+    } catch (error) {
+      console.error(
+        "Error deleting news:",
+        error.response?.data?.message || error.message || "Unknown error"
+      );
+      alert("Failed to delete news. Please try again.");
+    }
+  };
+
   // Handle View
   const handleView = (news) => {
     setSelectedNews(news);
     setViewModalOpen(true);
   };
 
+  function getFirst20Words(text) {
+    let words = text.split(/\s+/).slice(0, 20); // Split by spaces and take first 20 words
+    return words.join(" ") + "..."; // Join back into a string
+  }
+
+  const postNotifiction = async (news) => {
+    console.log("Post Notification --- > : ", news);
+    if (news.title && news.description) {
+      const formData = new FormData();
+      formData.append("title", news.title);
+      formData.append("description", getFirst20Words(news.description));
+      if (news.image) {
+        formData.append("file", news.image);
+      }
+
+      try {
+        console.log("FormData Entries:");
+        for (let pair of formData.entries()) {
+          console.log(pair[0], pair[1]);
+        }
+        console.log("Post notification Url ---> ", POSTNOTIFICATION);
+        const response = await axios.post(POSTNOTIFICATION, formData, {
+          headers: {
+            // Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        console.log("Post Notification response --> ", response);
+
+        if (response.status === 200) {
+          fetchAllNews();
+          closeUploadModal();
+        }
+      } catch (error) {
+        console.error("Error posting News:", error);
+      }
+    } else {
+      console.log("News data not found");
+    }
+  };
+
   const toggleActiveStatus = async (news) => {
+    if (news.toggle === "0") {
+      await postNotifiction(news);
+    }
+
     console.log("news Data  :  ", news);
 
     const newStatus = news.toggle === "0" ? "1" : "0"; // Determine new status
+    // const isVisible = news.isVisible === false ? true : false; // Determine new status
+
+    console.log("toggle", newStatus);
+    // console.log("isVisible", isVisible);
     const confirmation = window.confirm(
-      `Are you sure you want to ${newStatus === "1" ? "activate" : "deactivate"
+      `Are you sure you want to ${
+        newStatus === "1" ? "activate" : "deactivate"
       } this news?`
     );
 
@@ -205,7 +298,6 @@ const News = () => {
     formData.append("title", news.title);
     formData.append("description", news.description);
     formData.append("newsDate", news.newsDate);
-    formData.append("isVisible", true);
     // Handle image properly
     if (news.image && typeof news.image !== "string") {
       formData.append("image", news.image); // If it's a File object
@@ -215,10 +307,11 @@ const News = () => {
 
     // Toggle status correctly
     formData.append("toggle", newStatus);
+    // formData.append("isVisible", isVisible);
 
-    console.log("Form Data:");
+    console.log("FormData Entries:");
     for (let pair of formData.entries()) {
-      console.log(pair[0] + ": " + pair[1]); // Log each key-value pair
+      console.log(pair[0], pair[1]);
     }
 
     try {
@@ -343,6 +436,16 @@ const News = () => {
                         onClick={() => handleView(news)}
                       >
                         View
+                      </Button>
+                      <Button
+                        startIcon={<DeleteIcon />}
+                        variant="contained"
+                        sx={{ backgroundColor: "red" }}
+                        onClick={() => {
+                          handleDelete(news);
+                        }}
+                      >
+                        DELETE
                       </Button>
                     </TableCell>
                   </TableRow>
