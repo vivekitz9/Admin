@@ -43,6 +43,9 @@ const AllUsers = () => {
     district: "",
     state: "",
   });
+
+  // console.log(allUsers);
+
   const [selectedUser, setSelectedUser] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
@@ -50,6 +53,25 @@ const AllUsers = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [dateFiltr, setDateFilter] = useState("");
+  const [filterData, setFilterData] = useState([]);
+
+  const handleDateChange = (e) => {
+    const selectedDate = e.target.value;
+    console.log("selectedData : ", selectedDate);
+    setDateFilter(selectedDate);
+
+    setFilterData(
+      allUsers.filter((user) => {
+        const formattedDate = new Date(user.createDate)
+          .toISOString()
+          .split("T")[0];
+        console.log(formattedDate);
+        return selectedDate == formattedDate;
+      })
+    );
+  };
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
@@ -91,6 +113,7 @@ const AllUsers = () => {
       });
 
       setAllUsers(response.data.data || []); // Extract users from API response
+      setFilterData(response.data.data || []); // Extract users from API response
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch users");
     } finally {
@@ -187,7 +210,7 @@ const AllUsers = () => {
           gutterBottom
           sx={{ textAlign: "center", marginBottom: 2 }}
         >
-          All Users
+          {`All Users (${filterData.length})`}
         </Typography>
         <Box sx={{ textAlign: "center", marginBottom: 3 }}>
           <TextField
@@ -196,6 +219,12 @@ const AllUsers = () => {
             value={searchQuery}
             onChange={handleSearch}
             sx={{ width: "400px" }}
+          />
+          <TextField
+            type="date"
+            value={dateFiltr}
+            onChange={handleDateChange}
+            sx={{ marginBottom: 2, marginLeft: 1 }}
           />
           <Button
             variant="contained"

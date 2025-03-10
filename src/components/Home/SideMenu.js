@@ -24,6 +24,7 @@ import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
 import SideMenuStyle from "../../styles/Home/SideMenuStyle";
 import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 
 const SideMenu = () => {
   const user = useSelector((store) => store.auth);
@@ -37,6 +38,11 @@ const SideMenu = () => {
   const navItems = [
     { text: "Home", icon: <HomeIcon />, path: "/" },
     { text: "View Users", icon: <PeopleIcon />, path: "all-users" },
+    {
+      text: "Manage Notifications",
+      icon: <NotificationsIcon />,
+      path: "notifications",
+    },
     { text: "Mission & Vision", icon: <GoalIcon />, path: "mission-vision" },
     { text: "Member", icon: <PeopleIcon />, path: "member" },
     { text: "Events", icon: <EventIcon />, path: "events" },
