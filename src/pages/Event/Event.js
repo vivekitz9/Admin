@@ -77,7 +77,7 @@ const Event = () => {
 
       if (response?.data?.success) {
         console.log('response=======>', response);
-        setEventList(response.data.data || []); // Extract users from API response
+        setEventList(response?.data?.data?.sort((a, b) => new Date(b?.eventDate) - new Date(a?.eventDate)) || []); // Extract users from API response
       }
     } catch (err) {
       console.log(err.response?.data?.message);
@@ -759,7 +759,7 @@ const Event = () => {
             <TextField
               fullWidth
               label="Uri"
-              value={newEvent.uri}
+              value={editData.uri}
               onChange={(e) =>
                 setEditData((prev) => ({ ...prev, uri: e.target.value }))
               }

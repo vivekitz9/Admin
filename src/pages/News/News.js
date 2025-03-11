@@ -74,7 +74,7 @@ const News = () => {
         },
       });
 
-      setNewsList(response.data.data || []); // Extract users from API response
+      setNewsList(response.data.data.sort((a, b) => new Date(b?.newsDate) - new Date(a?.newsDate)) || []); // Extract users from API response
     } catch (err) {
       console.log(err.response?.data?.message);
     }
@@ -199,6 +199,9 @@ const News = () => {
     console.log("news Data  :  ", news);
 
     const newStatus = news.toggle === "0" ? "1" : "0"; // Determine new status
+    const newVisible = news.toggle === "0" ? "true" : "false"; // Determine new status
+
+// console.log('newVisible------>', newVisible);
     const confirmation = window.confirm(
       `Are you sure you want to ${newStatus === "1" ? "activate" : "deactivate"
       } this news?`
@@ -213,7 +216,7 @@ const News = () => {
     formData.append("title", news.title);
     formData.append("description", news.description);
     formData.append("newsDate", formatDate(new Date()));
-    formData.append("isVisible", true);
+    formData.append("isVisible", newVisible);
     // Handle image properly
     if (news.image && typeof news.image !== "string") {
       formData.append("image", news.image); // If it's a File object
