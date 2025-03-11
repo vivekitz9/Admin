@@ -79,6 +79,7 @@ const Gallery = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setEditData((prev) => ({ ...prev, file }));
+    setNewImage((prev) => ({ ...prev, file }));
   };
 
   // Handle Post Image
@@ -86,8 +87,14 @@ const Gallery = () => {
     if (newImage.file && newImage.title) {
       const formData = new FormData();
       formData.append("title", newImage.title);
+      console.log('newImage.file---->', newImage.file);
+
       if (newImage.file) {
-        formData.append("file", newImage.file);
+        if (newImage?.file?.type == "video/mp4") {
+          formData.append("video", newImage.file);
+        } else {
+          formData.append("file", newImage.file);
+        }
       }
       try {
         const response = await axios.post(POSTAPI, formData, {
@@ -97,7 +104,7 @@ const Gallery = () => {
           },
         });
 
-        if (response.status === 200) {
+        if (response?.status === 200) {
           fetchAllImage();
           closeUploadModal();
         }
@@ -121,7 +128,11 @@ const Gallery = () => {
       const formData = new FormData();
       formData.append("title", editData.title);
       if (editData.file) {
-        formData.append("file", editData.file);
+        if (newImage?.file?.type == "video/mp4") {
+          formData.append("video", editData.file);
+        } else {
+          formData.append("file", editData.file);
+        }
       }
 
       try {
@@ -130,8 +141,8 @@ const Gallery = () => {
           formData,
           {
             headers: {
-              "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
             },
           }
         );
@@ -147,10 +158,9 @@ const Gallery = () => {
   const handleToggle = async (image) => {
     console.log("image Data  :  ", image);
 
-    const newStatus = image.toggle === "0" ? "1" : "0"; // Determine new status
+    const newStatus = image.toggle === "0" ? 1 : 0; // Determine new status
     const confirmation = window.confirm(
-      `Are you sure you want to ${
-        newStatus === "1" ? "activate" : "deactivate"
+      `Are you sure you want to ${newStatus === "1" ? "activate" : "deactivate"
       } this Image?`
     );
 
@@ -161,26 +171,33 @@ const Gallery = () => {
 
     const formData = new FormData();
     formData.append("title", image.title);
+    // if (image.image) {
+    //   formData.append("file", image.image);
+    // }
+
+    // if (image?.video) {
+    //   formData.append("video", image.video);
+    // }
 
     // Handle image properly
-    if (image.image && typeof image.image !== "string") {
-      formData.append("image", image.image); // If it's a File object
-    } else if (typeof image.image === "string") {
-      formData.append("imageUrl", image.image); // If it's a URL, store as a string
-    }
+    // if (image.image && typeof image.image !== "string") {
+    //   formData.append("image", image.image); // If it's a File object
+    // } else if (typeof image.image === "string") {
+    //   formData.append("imageUrl", image.image); // If it's a URL, store as a string
+    // }
 
     // Toggle status correctly
-    formData.append("toggle", image.toggle === "0" ? "1" : "0");
+    formData.append("toggle", newStatus);
 
-    console.log("Form Data:");
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ": " + pair[1]); // Log each key-value pair
-    }
+    // console.log("Form Data:");
+    // for (let pair of formData.entries()) {
+    //   console.log(pair[0] + ": " + pair[1]); // Log each key-value pair
+    // }
 
     try {
       const response = await axios.put(`${PUTAPI}/${image.id}`, formData, {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       });
@@ -196,6 +213,8 @@ const Gallery = () => {
       fetchAllImage();
     }
   }, []);
+
+  console.log('newImage---->', newImage);
 
   return (
     <Box sx={{ padding: 2 }}>
@@ -235,7 +254,7 @@ const Gallery = () => {
         <List>
           {images.map((image) => (
             <ListItem key={image.image} sx={{ borderBottom: "1px solid #ddd" }}>
-              <CardMedia
+              {image.image !== "" ? <CardMedia
                 component="img"
                 image={image.image}
                 alt={image.title}
@@ -246,7 +265,19 @@ const Gallery = () => {
                   borderRadius: "8px",
                   marginRight: 2,
                 }}
-              />
+              /> :
+                <CardMedia
+                  component="video"
+                  image={image?.video}
+                  alt={image.title}
+                  sx={{
+                    width: "100px",
+                    height: "100px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                    marginRight: 2,
+                  }}
+                />}
 
               <ListItemText
                 primary={image.title}
@@ -312,7 +343,7 @@ const Gallery = () => {
             <input
               type="file"
               hidden
-              accept="image/*"
+              accept="image/*,video/*"
               onChange={handleImageChange}
             />
           </Button>
@@ -357,7 +388,7 @@ const Gallery = () => {
             <input
               type="file"
               hidden
-              accept="image/*"
+              accept="image/*,video/*"
               onChange={handleImageChange}
             />
           </Button>

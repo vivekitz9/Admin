@@ -31,7 +31,7 @@ import axios from "axios";
 
 const GETAPI = `${baseURL}api/v1/events`;
 const POSTAPI = `${baseURL}api/v1/events`;
-const PUTAPI = `${baseURL}api/v1/events`;
+const PUTAPI = `${baseURL}api/v1/events/`;
 const today = dayjs();
 
 const Event = () => {
@@ -77,7 +77,7 @@ const Event = () => {
 
       if (response?.data?.success) {
         console.log('response=======>', response);
-        setEventList(response.data.data || []); // Extract users from API response
+        setEventList(response?.data?.data?.sort((a, b) => new Date(b?.eventDate) - new Date(a?.eventDate)) || []); // Extract users from API response
       }
     } catch (err) {
       console.log(err.response?.data?.message);
@@ -142,16 +142,15 @@ const Event = () => {
 
       formData.append("uri", newEvent.eventEndTime);
       if (newEvent.image) {
-        formData.append("image", newEvent.image);
+        formData.append("file", newEvent.image);
       }
-      console.log('formData------>', formData);
       console.log("form Data", formData);
 
       try {
         const response = await axios.post(POSTAPI, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
+            // "Content-Type": "multipart/form-data",
           },
         });
 
@@ -191,21 +190,25 @@ const Event = () => {
       return;
     }
 
-    const updatedEventList = {
-      eventTitle: editData.eventTitle,
-      eventDescription: editData.eventDescription,
-      eventDate: editData.eventDate,
-      eventStartTime: editData.eventStartTime,
-      eventEndTime: editData.eventEndTime,
-      image: editData.image
+    const formData = new FormData();
+    formData.append("eventTitle", editData.eventTitle);
+    formData.append("eventDescription", editData.eventDescription);
+    formData.append("eventDate", editData.eventDate);
+    formData.append("eventStartTime", editData.eventStartTime);
+    formData.append("eventEndTime", editData.eventEndTime);
+
+    formData.append("uri", editData.uri);
+    if (newEvent.image) {
+      formData.append("file", editData.image
         ? URL.createObjectURL(editData.image)
-        : selectedEvent.image,
-    };
+        : selectedEvent.image);
+    }
+    formData.append("eventType", "upcoming");
 
     try {
       const response = await axios.put(
         `${PUTAPI}/${selectedEvent.id}`,
-        updatedEventList,
+        formData,
         {
           headers: {
             "Content-Type": "application/json",
@@ -230,11 +233,34 @@ const Event = () => {
   };
 
   // Toggle Active/Inactive
-  const toggleActiveStatus = (event) => {
-    const updatedEventList = eventList.map((n) =>
-      n === event ? { ...n, isActive: !n.isActive } : n
-    );
-    setEventList(updatedEventList);
+  const toggleActiveStatus = async (event) => {
+    const eventDate = event?.toggle === "0" ? "1" : "0"; // Determine new status
+
+    if (!token) {
+      console.error("No authentication token found");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("toggle", eventDate);
+    try {
+      const response = await axios.put(
+        `${PUTAPI}${event.id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      fetchAllEvent();
+
+      closeEditModal();
+    } catch (error) {
+      console.error("Error updating Event:", error);
+    }
+
   };
 
   // Handle Pagination
@@ -311,7 +337,7 @@ const Event = () => {
                     <TableCell>{event.eventEndTime}</TableCell>
                     <TableCell>
                       <Switch
-                        checked={event.isActive}
+                        checked={event?.toggle == "1"}
                         onChange={() => toggleActiveStatus(event)}
                         color="primary"
                       />
@@ -686,8 +712,8 @@ const Event = () => {
                   eventStartTime: e.target.value,
                 }))
               }
-              multiline
-              rows={7}
+              // multiline
+              // rows={7}
               sx={{ marginBottom: 2 }}
             />
             {/* <TimePicker
@@ -714,8 +740,8 @@ const Event = () => {
                   eventEndTime: e.target.value,
                 }))
               }
-              multiline
-              rows={7}
+              // multiline
+              // rows={7}
               sx={{ marginBottom: 2 }}
             />
             {/* <TimePicker
@@ -733,7 +759,7 @@ const Event = () => {
             <TextField
               fullWidth
               label="Uri"
-              value={newEvent.uri}
+              value={editData.uri}
               onChange={(e) =>
                 setEditData((prev) => ({ ...prev, uri: e.target.value }))
               }

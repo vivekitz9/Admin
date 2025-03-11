@@ -37,7 +37,6 @@ const News = () => {
     newsDate: "",
     file: null,
   });
-
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editData, setEditData] = useState({
     title: "",
@@ -47,15 +46,24 @@ const News = () => {
   });
   const [selectedNews, setSelectedNews] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
-
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
-
   const role = user?.user?.data?.role;
-  console.log(role);
+
+  function formatDate(date) {
+    var d = new Date(date),
+      month = '' + (d.getMonth() + 1),
+      day = '' + d.getDate(),
+      year = d.getFullYear();
+
+    if (month.length < 2)
+      month = '0' + month;
+    if (day.length < 2)
+      day = '0' + day;
+    return [year, month, day].join('-');
+  }
 
   //Fetch All News
   const fetchAllNews = async () => {
@@ -66,7 +74,7 @@ const News = () => {
         },
       });
 
-      setNewsList(response.data.data || []); // Extract users from API response
+      setNewsList(response.data.data.sort((a, b) => new Date(b?.newsDate) - new Date(a?.newsDate)) || []); // Extract users from API response
     } catch (err) {
       console.log(err.response?.data?.message);
     }
@@ -191,6 +199,9 @@ const News = () => {
     console.log("news Data  :  ", news);
 
     const newStatus = news.toggle === "0" ? "1" : "0"; // Determine new status
+    const newVisible = news.toggle === "0" ? "true" : "false"; // Determine new status
+
+// console.log('newVisible------>', newVisible);
     const confirmation = window.confirm(
       `Are you sure you want to ${newStatus === "1" ? "activate" : "deactivate"
       } this news?`
@@ -204,8 +215,8 @@ const News = () => {
     const formData = new FormData();
     formData.append("title", news.title);
     formData.append("description", news.description);
-    formData.append("newsDate", news.newsDate);
-    formData.append("isVisible", true);
+    formData.append("newsDate", formatDate(new Date()));
+    formData.append("isVisible", newVisible);
     // Handle image properly
     if (news.image && typeof news.image !== "string") {
       formData.append("image", news.image); // If it's a File object
