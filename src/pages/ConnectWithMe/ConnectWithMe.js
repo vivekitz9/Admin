@@ -79,7 +79,9 @@ const ConnectWithMe = () => {
 
   useEffect(() => {
     async function fetchUserList() {
+      console.log('user---->', user);
       try {
+        if(user){
         const response = await axios.get(baseURL + "api/v1/chat/admin/" + user?.user?.data?.id, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -88,6 +90,7 @@ const ConnectWithMe = () => {
         if (response?.data?.success) {
           setUserData(response?.data?.data?.data)
         }
+      }
       } catch (error) {
         console.log('error get user------>', error);
       }
@@ -99,22 +102,25 @@ const ConnectWithMe = () => {
   useEffect(() => {
     async function handleGetMessage() {
       try {
-        const response = await axios.get(baseURL + "api/v1/chat/user/" + selectedUser?.id + '/' + user?.user?.data?.id, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response?.data?.success) {
-          if (response?.data?.data?.length > 0) {
-            response?.data?.data?.map((item) => {
-              if (item?.senderId === user?.user?.data?.id) {
-                const newMessage = { sender: user?.user?.data?.fullName, text: item?.text, id: item?.senderId }
-                setMessages((prevMessages) => [...prevMessages, newMessage]);
-              } else {
-                const userResponse = { sender: selectedUser.fullName, text: item?.text, id: item?.senderId }
-                setMessages((prevMessages) => [...prevMessages, userResponse]);
-              }
-            })
+        console.log('selectedUser----->', selectedUser);
+        if (selectedUser !== null) {
+          const response = await axios.get(baseURL + "api/v1/chat/user/" + selectedUser?.id + '/' + user?.user?.data?.id, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (response?.data?.success) {
+            if (response?.data?.data?.length > 0) {
+              response?.data?.data?.map((item) => {
+                if (item?.senderId === user?.user?.data?.id) {
+                  const newMessage = { sender: user?.user?.data?.fullName, text: item?.text, id: item?.senderId }
+                  setMessages((prevMessages) => [...prevMessages, newMessage]);
+                } else {
+                  const userResponse = { sender: selectedUser.fullName, text: item?.text, id: item?.senderId }
+                  setMessages((prevMessages) => [...prevMessages, userResponse]);
+                }
+              })
+            }
           }
         }
       } catch (error) {
@@ -127,7 +133,7 @@ const ConnectWithMe = () => {
 
 
 
-  console.log('messages---->', messages);
+  console.log('userData---->', user);
   return (
     <Box
       sx={{
@@ -151,12 +157,12 @@ const ConnectWithMe = () => {
         <List>
           {userData?.length !== 0 && userData?.map((item) => (
             <ListItem
-              key={item.id}
+              key={item?.id}
               button
               onClick={() => handleSelectUser(item)}
             >
               <Avatar src={item?.image} sx={{ marginRight: 2 }} />
-              <ListItemText primary={item?.fullName} secondary={item.lastMessage} />
+              <ListItemText primary={item?.fullName} secondary={item?.lastMessage} />
             </ListItem>
           ))}
         </List>
