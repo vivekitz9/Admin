@@ -22,10 +22,11 @@ const ConnectWithMe = () => {
   const chatEndRef = useRef(null);
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
-  const [userData, setUserData] = useState([])
+  const [userData, setUserData] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [sendSuccess, setSendSuccess] = useState(false)
+  const [sendSuccess, setSendSuccess] = useState(false);
 
+  console.log("Messages  ---> ", messages);
 
   // Open chat with a selected user
   const handleSelectUser = (user) => {
@@ -35,41 +36,46 @@ const ConnectWithMe = () => {
   // Send message
   const handleSendMessage = async () => {
     if (messageText.trim() && selectedUser) {
-      const newMessage = { sender: user?.user?.data?.fullName, text: messageText, id: user?.user?.data?.id };
+      const newMessage = {
+        sender: user?.user?.data?.fullName,
+        text: messageText,
+        id: user?.user?.data?.id,
+      };
       setMessages((prevMessages) => [...prevMessages, newMessage]);
       try {
         const photo = {
           // uri: imageUri,
-          type: 'image/jpeg',
-          name: 'test.jpg',
+          type: "image/jpeg",
+          name: "test.jpg",
         };
         const payload = new FormData();
-        payload.append('senderId', user?.user?.data?.id);
-        payload.append('receiverId', selectedUser?.id);
-        payload.append('message', messageText);
-        console.log('payload----->', payload);
+        payload.append("senderId", user?.user?.data?.id);
+        payload.append("receiverId", selectedUser?.id);
+        payload.append("message", messageText);
+        console.log("payload----->", payload);
 
         await fetch(baseURL + "api/v1/chat/send", {
           method: "POST",
           body: payload,
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             Accept: "*",
           },
-        }).then(response => {
-          console.log('res----->', response);
-          return response.json();
-        }).then(res => {
-          if (res?.success) {
-            setSendSuccess(true)
-            setMessages([]);
-            setMessageText('')
-          }
         })
+          .then((response) => {
+            console.log("res----->", response);
+            return response.json();
+          })
+          .then((res) => {
+            if (res?.success) {
+              setSendSuccess(true);
+              setMessages([]);
+              setMessageText("");
+            }
+          });
       } catch (error) {
-        console.log('error----->', error);
+        console.log("error----->", error);
       }
-
     }
   };
 
@@ -79,61 +85,78 @@ const ConnectWithMe = () => {
 
   useEffect(() => {
     async function fetchUserList() {
-      console.log('user---->', user);
+      console.log("user---->", user);
       try {
-        if(user){
-        const response = await axios.get(baseURL + "api/v1/chat/admin/" + user?.user?.data?.id, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response?.data?.success) {
-          setUserData(response?.data?.data?.data)
+        if (user) {
+          const response = await axios.get(
+            baseURL + "api/v1/chat/admin/" + user?.user?.data?.id,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          if (response?.data?.success) {
+            setUserData(response?.data?.data?.data);
+          }
         }
-      }
       } catch (error) {
-        console.log('error get user------>', error);
+        console.log("error get user------>", error);
       }
-
     }
-    fetchUserList()
-  }, [])
+    fetchUserList();
+  }, []);
 
   useEffect(() => {
     async function handleGetMessage() {
       try {
-        console.log('selectedUser----->', selectedUser);
+        console.log("selectedUser----->", selectedUser);
         if (selectedUser !== null) {
-          const response = await axios.get(baseURL + "api/v1/chat/user/" + selectedUser?.id + '/' + user?.user?.data?.id, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          const response = await axios.get(
+            baseURL +
+              "api/v1/chat/user/" +
+              selectedUser?.id +
+              "/" +
+              user?.user?.data?.id,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
           if (response?.data?.success) {
             if (response?.data?.data?.length > 0) {
               response?.data?.data?.map((item) => {
                 if (item?.senderId === user?.user?.data?.id) {
-                  const newMessage = { sender: user?.user?.data?.fullName, text: item?.text, id: item?.senderId }
+                  const newMessage = {
+                    sender: user?.user?.data?.fullName,
+                    text: item?.text,
+                    id: item?.senderId,
+                  };
                   setMessages((prevMessages) => [...prevMessages, newMessage]);
                 } else {
-                  const userResponse = { sender: selectedUser.fullName, text: item?.text, id: item?.senderId }
-                  setMessages((prevMessages) => [...prevMessages, userResponse]);
+                  const userResponse = {
+                    sender: selectedUser.fullName,
+                    text: item?.text,
+                    id: item?.senderId,
+                  };
+                  setMessages((prevMessages) => [
+                    ...prevMessages,
+                    userResponse,
+                  ]);
                 }
-              })
+              });
             }
           }
         }
       } catch (error) {
-        console.log('error get user------>', error);
+        console.log("error get user------>", error);
       }
     }
     handleGetMessage();
-  }, [selectedUser, sendSuccess])
+  }, [selectedUser, sendSuccess]);
 
-
-
-
-  console.log('userData---->', user);
+  // console.log('userData---->', user);
   return (
     <Box
       sx={{
@@ -155,16 +178,20 @@ const ConnectWithMe = () => {
           Chats
         </Typography>
         <List>
-          {userData?.length !== 0 && userData?.map((item) => (
-            <ListItem
-              key={item?.id}
-              button
-              onClick={() => handleSelectUser(item)}
-            >
-              <Avatar src={item?.image} sx={{ marginRight: 2 }} />
-              <ListItemText primary={item?.fullName} secondary={item?.lastMessage} />
-            </ListItem>
-          ))}
+          {userData?.length !== 0 &&
+            userData?.map((item) => (
+              <ListItem
+                key={item?.id}
+                button
+                onClick={() => handleSelectUser(item)}
+              >
+                <Avatar src={item?.image} sx={{ marginRight: 2 }} />
+                <ListItemText
+                  primary={item?.fullName}
+                  secondary={item?.lastMessage}
+                />
+              </ListItem>
+            ))}
         </List>
       </Paper>
 
@@ -202,14 +229,20 @@ const ConnectWithMe = () => {
                   key={index}
                   sx={{
                     display: "flex",
-                    justifyContent: msg?.id === user?.user?.data?.id ? "flex-end" : "flex-start",
+                    justifyContent:
+                      msg?.id === user?.user?.data?.id
+                        ? "flex-end"
+                        : "flex-start",
                     marginBottom: 1,
                   }}
                 >
                   <Box
                     sx={{
-                      background: msg?.id === user?.user?.data?.id ? "#84764F" : "#e0e0e0",
-                      color: msg?.id === user?.user?.data?.id ? "#fff" : '#000',
+                      background:
+                        msg?.id === user?.user?.data?.id
+                          ? "#84764F"
+                          : "#e0e0e0",
+                      color: msg?.id === user?.user?.data?.id ? "#fff" : "#000",
                       padding: 1,
                       borderRadius: "10px",
                       maxWidth: "75%",

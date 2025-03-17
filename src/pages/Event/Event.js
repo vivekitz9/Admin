@@ -21,9 +21,9 @@ import {
 
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs from 'dayjs';
-
+import dayjs from "dayjs";
 import { Edit } from "@mui/icons-material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
@@ -32,6 +32,10 @@ import axios from "axios";
 const GETAPI = `${baseURL}api/v1/events`;
 const POSTAPI = `${baseURL}api/v1/events`;
 const PUTAPI = `${baseURL}api/v1/events/`;
+const DELETEAPI = `${baseURL}api/v1/events/`;
+
+const POSTNOTIFICATION = `${baseURL}api/v1/notification/sendNotification`;
+
 const today = dayjs();
 
 const Event = () => {
@@ -44,7 +48,7 @@ const Event = () => {
     eventStartTime: today,
     eventEndTime: today,
     image: null,
-    uri: ''
+    uri: "",
   });
 
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -55,7 +59,7 @@ const Event = () => {
     eventStartTime: null,
     eventEndTime: null,
     image: null,
-    uri: ''
+    uri: "",
   });
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -76,8 +80,12 @@ const Event = () => {
       });
 
       if (response?.data?.success) {
-        console.log('response=======>', response);
-        setEventList(response?.data?.data?.sort((a, b) => new Date(b?.eventDate) - new Date(a?.eventDate)) || []); // Extract users from API response
+        console.log("response=======>", response);
+        setEventList(
+          response?.data?.data?.sort(
+            (a, b) => new Date(b?.eventDate) - new Date(a?.eventDate)
+          ) || []
+        ); // Extract users from API response
       }
     } catch (err) {
       console.log(err.response?.data?.message);
@@ -199,9 +207,12 @@ const Event = () => {
 
     formData.append("uri", editData.uri);
     if (newEvent.image) {
-      formData.append("file", editData.image
-        ? URL.createObjectURL(editData.image)
-        : selectedEvent.image);
+      formData.append(
+        "file",
+        editData.image
+          ? URL.createObjectURL(editData.image)
+          : selectedEvent.image
+      );
     }
     formData.append("eventType", "upcoming");
 
@@ -226,14 +237,92 @@ const Event = () => {
     }
   };
 
+  const handleDelete = async (event) => {
+    if (!event?.id) {
+      console.error("Invalid event object: Missing ID");
+      return;
+    }
+
+    if (!token) {
+      console.error("Authorization token is missing!");
+      return;
+    }
+
+    // Show confirmation alert
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete this event?`
+    );
+    if (!isConfirmed) {
+      console.log("Delete action canceled.");
+      return;
+    }
+
+    try {
+      await axios.delete(`${DELETEAPI}/${event.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchAllEvent();
+    } catch (error) {
+      console.error(
+        "Error deleting Event:",
+        error.response?.data?.message || error.message || "Unknown error"
+      );
+      alert("Failed to delete event. Please try again.");
+    }
+  };
+
   // Handle View
   const handleView = (event) => {
     setSelectedEvent(event);
     setViewModalOpen(true);
   };
 
+  function getFirst20Words(text) {
+    let words = text.split(/\s+/).slice(0, 20); // Split by spaces and take first 20 words
+    return words.join(" ") + "..."; // Join back into a string
+  }
+
+  const postNotifiction = async (event) => {
+    console.log("Post Notification --- > : ", event);
+    if (event.eventTitle && event.eventDescription) {
+      const formData = new FormData();
+      formData.append("title", event.eventTitle);
+      formData.append("description", getFirst20Words(event.eventDescription));
+      if (event.image) {
+        formData.append("file", event.image);
+      }
+
+      try {
+        console.log("FormData Entries:");
+        for (let pair of formData.entries()) {
+          console.log(pair[0], pair[1]);
+        }
+        console.log("Post notification Url ---> ", POSTNOTIFICATION);
+        const response = await axios.post(POSTNOTIFICATION, formData, {
+          headers: {
+            // Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        console.log("Post Notification response --> ", response);
+
+        if (response.status === 200) {
+          fetchAllEvent();
+        }
+      } catch (error) {
+        console.error("Error posting Event:", error);
+      }
+    } else {
+      console.log("Event data not found");
+    }
+  };
+
   // Toggle Active/Inactive
   const toggleActiveStatus = async (event) => {
+    if (event.toggle === "0") {
+      await postNotifiction(event);
+    }
     const eventDate = event?.toggle === "0" ? "1" : "0"; // Determine new status
 
     if (!token) {
@@ -243,16 +332,12 @@ const Event = () => {
     const formData = new FormData();
     formData.append("toggle", eventDate);
     try {
-      const response = await axios.put(
-        `${PUTAPI}${event.id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.put(`${PUTAPI}${event.id}`, formData, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       fetchAllEvent();
 
@@ -260,7 +345,6 @@ const Event = () => {
     } catch (error) {
       console.error("Error updating Event:", error);
     }
-
   };
 
   // Handle Pagination
@@ -337,7 +421,7 @@ const Event = () => {
                     <TableCell>{event.eventEndTime}</TableCell>
                     <TableCell>
                       <Switch
-                        checked={event?.toggle == "1"}
+                        checked={event?.toggle === "1"}
                         onChange={() => toggleActiveStatus(event)}
                         color="primary"
                       />
@@ -363,6 +447,16 @@ const Event = () => {
                         onClick={() => handleView(event)}
                       >
                         View
+                      </Button>
+                      <Button
+                        startIcon={<DeleteIcon />}
+                        variant="contained"
+                        sx={{ backgroundColor: "red" }}
+                        onClick={() => {
+                          handleDelete(event);
+                        }}
+                      >
+                        DELETE
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -578,13 +672,15 @@ const Event = () => {
             <Box fullWidth>
               {/* Event Start Time Picker */}
               <TextField
-
                 label="Event Start Time"
                 value={newEvent.eventStartTime}
                 onChange={(e) =>
-                  setNewEvent((prev) => ({ ...prev, eventStartTime: e.target.value }))
+                  setNewEvent((prev) => ({
+                    ...prev,
+                    eventStartTime: e.target.value,
+                  }))
                 }
-                sx={{ marginBottom: 2, width: '45%' }}
+                sx={{ marginBottom: 2, width: "45%" }}
               />
               {/* <TimePicker
               label="Event Start Time"
@@ -601,9 +697,12 @@ const Event = () => {
                 label="Event End Time"
                 value={newEvent.eventEndTime}
                 onChange={(e) =>
-                  setNewEvent((prev) => ({ ...prev, eventEndTime: e.target.value }))
+                  setNewEvent((prev) => ({
+                    ...prev,
+                    eventEndTime: e.target.value,
+                  }))
                 }
-                sx={{ marginBottom: 2, width: '45%', marginLeft: 5 }}
+                sx={{ marginBottom: 2, width: "45%", marginLeft: 5 }}
               />
               {/* <TimePicker
               label="Event End Time"

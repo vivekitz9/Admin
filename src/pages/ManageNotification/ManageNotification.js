@@ -22,11 +22,13 @@ import { Edit } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
+import SendIcon from "@mui/icons-material/Send";
 import axios from "axios";
 
 const GETAPI = `${baseURL}api/v1/notification/fetchAllNotifications`;
 const POSTAPI = `${baseURL}api/v1/notification/createNotification`;
 const PUTAPI = `${baseURL}api/v1`;
+const SENDNOTIFICATION = `${baseURL}api/v1/notification/sendNotification`;
 
 const ManageNotification = () => {
   const [notifications, setNotifications] = useState([]);
@@ -116,6 +118,7 @@ const ManageNotification = () => {
         if (response.status === 200) {
           // fetchAllNotifications(); // Uncomment if needed
           closeUploadModal();
+          fetchAllNotifications();
         }
       } catch (error) {
         if (error.response) {
@@ -190,51 +193,36 @@ const ManageNotification = () => {
     setViewModalOpen(true);
   };
 
-  // const toggleActiveStatus = async (notification) => {
-  //   console.log("notification Data  :  ", notification);
+  const handleSendNotifiction = async (notification) => {
+    console.log(notification);
+    if (
+      notification.notificationTitle &&
+      notification.notificationDescription
+    ) {
+      const formData = new FormData();
+      formData.append("title", notification.notificationTitle);
+      formData.append("description", notification.notificationDescription);
 
-  //   const newStatus = notification.toggle === "0" ? "1" : "0"; // Determine new status
-  //   const confirmation = window.confirm(
-  //     `Are you sure you want to ${
-  //       newStatus === "1" ? "activate" : "deactivate"
-  //     } this notification?`
-  //   );
+      try {
+        console.log("FormData Entries:");
+        for (let pair of formData.entries()) {
+          console.log(pair[0], pair[1]);
+        }
+        const response = await axios.post(SENDNOTIFICATION, formData, {
+          headers: {
+            // Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
 
-  //   if (!confirmation) {
-  //     console.log("Toggle action cancelled");
-  //     return; // Stop execution if the user clicks Cancel
-  //   }
-
-  //   const formData = new FormData();
-  //   formData.append("title", notification.title);
-  //   formData.append("content", notification.content);
-
-  //   // Toggle status correctly
-  //   formData.append("toggle", newStatus);
-
-  //   console.log("Form Data:");
-  //   for (let pair of formData.entries()) {
-  //     console.log(pair[0] + ": " + pair[1]); // Log each key-value pair
-  //   }
-
-  //   try {
-  //     const response = await axios.put(
-  //       `${PUTAPI}/${notification.id}`,
-  //       formData,
-  //       {
-  //         headers: {
-  //           "Content-Type": "multipart/form-data", // Correct Content-Type for FormData
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-
-  //     fetchAllNotifications();
-  //   } catch (error) {
-  //     console.error("Error updating notification:", error);
-  //     alert("Something went wrong. Please try again.");
-  //   }
-  // };
+        console.log("Post Notification response --> ", response);
+      } catch (error) {
+        console.error("Error posting Notification:", error);
+      }
+    } else {
+      console.log("News data not found");
+    }
+  };
 
   // Handle Pagination
 
@@ -304,7 +292,7 @@ const ManageNotification = () => {
                   <TableRow key={index}>
                     <TableCell>{notification.notificationTitle}</TableCell>
                     <TableCell>
-                      <IconButton onClick={() => handleEdit(notification)}>
+                      {/* <IconButton onClick={() => handleEdit(notification)}>
                         <Button
                           variant="contained"
                           sx={{ backgroundColor: "#84764F" }}
@@ -316,13 +304,21 @@ const ManageNotification = () => {
                         >
                           Edit
                         </Button>
-                      </IconButton>
+                      </IconButton> */}
                       <Button
                         variant="contained"
                         sx={{ marginLeft: 1 }}
                         onClick={() => handleView(notification)}
                       >
                         View
+                      </Button>
+                      <Button
+                        variant="contained"
+                        sx={{ marginLeft: 1 }}
+                        startIcon={<SendIcon />}
+                        onClick={() => handleSendNotifiction(notification)}
+                      >
+                        Send Notification
                       </Button>
                     </TableCell>
                   </TableRow>

@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import { Edit } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
 import axios from "axios";
@@ -27,6 +28,7 @@ import axios from "axios";
 const GETAPI = `${baseURL}api/v1/blogs`;
 const POSTAPI = `${baseURL}api/v1/blogs`;
 const PUTAPI = `${baseURL}api/v1/blogs`;
+const DELETEAPI = `${baseURL}api/v1/blogs`;
 
 const Blogs = () => {
   const [blogs, setBlogs] = useState([]);
@@ -166,6 +168,40 @@ const Blogs = () => {
       closeEditModal();
     } catch (error) {
       console.error("Error updating blog:", error);
+    }
+  };
+
+  const handleDelete = async (blog) => {
+    if (!blog?.id) {
+      console.error("Invalid event object: Missing ID");
+      return;
+    }
+
+    if (!token) {
+      console.error("Authorization token is missing!");
+      return;
+    }
+
+    // Show confirmation alert
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete this blog?`
+    );
+    if (!isConfirmed) {
+      console.log("Delete action canceled.");
+      return;
+    }
+
+    try {
+      await axios.delete(`${DELETEAPI}/${blog.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchAllBlogs();
+    } catch (error) {
+      console.error(
+        "Error deleting blog:",
+        error.response?.data?.message || error.message || "Unknown error"
+      );
+      alert("Failed to delete blog. Please try again.");
     }
   };
 
@@ -343,6 +379,16 @@ const Blogs = () => {
                         onClick={() => handleView(blog)}
                       >
                         View
+                      </Button>
+                      <Button
+                        startIcon={<DeleteIcon />}
+                        variant="contained"
+                        sx={{ backgroundColor: "red", marginLeft: "15px" }}
+                        onClick={() => {
+                          handleDelete(blog);
+                        }}
+                      >
+                        DELETE
                       </Button>
                     </TableCell>
                   </TableRow>

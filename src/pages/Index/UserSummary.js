@@ -42,12 +42,12 @@ const UserSummary = () => {
       setMaleUsers(
         users.filter((user) => {
           console.log("gender --> : ", user.gender);
-          return user.gender === "male";
+          return user.gender === "Male";
         })
       );
       setFemaleUsers(
         users.filter((user) => {
-          return user.gender === "female";
+          return user.gender === "Female";
         })
       );
     } catch (err) {
