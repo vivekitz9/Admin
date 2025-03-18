@@ -23,7 +23,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import { Edit } from "@mui/icons-material";
-import DeleteIcon from "@mui/icons-material/Delete";
+// import DeleteIcon from "@mui/icons-material/Delete";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
@@ -66,6 +66,7 @@ const Event = () => {
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
@@ -237,39 +238,41 @@ const Event = () => {
     }
   };
 
-  const handleDelete = async (event) => {
-    if (!event?.id) {
-      console.error("Invalid event object: Missing ID");
-      return;
-    }
+  // **************** Handle Delete ***************
 
-    if (!token) {
-      console.error("Authorization token is missing!");
-      return;
-    }
+  // const handleDelete = async (event) => {
+  //   if (!event?.id) {
+  //     console.error("Invalid event object: Missing ID");
+  //     return;
+  //   }
 
-    // Show confirmation alert
-    const isConfirmed = window.confirm(
-      `Are you sure you want to delete this event?`
-    );
-    if (!isConfirmed) {
-      console.log("Delete action canceled.");
-      return;
-    }
+  //   if (!token) {
+  //     console.error("Authorization token is missing!");
+  //     return;
+  //   }
 
-    try {
-      await axios.delete(`${DELETEAPI}/${event.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchAllEvent();
-    } catch (error) {
-      console.error(
-        "Error deleting Event:",
-        error.response?.data?.message || error.message || "Unknown error"
-      );
-      alert("Failed to delete event. Please try again.");
-    }
-  };
+  //   // Show confirmation alert
+  //   const isConfirmed = window.confirm(
+  //     `Are you sure you want to delete this event?`
+  //   );
+  //   if (!isConfirmed) {
+  //     console.log("Delete action canceled.");
+  //     return;
+  //   }
+
+  //   try {
+  //     await axios.delete(`${DELETEAPI}/${event.id}`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+  //     fetchAllEvent();
+  //   } catch (error) {
+  //     console.error(
+  //       "Error deleting Event:",
+  //       error.response?.data?.message || error.message || "Unknown error"
+  //     );
+  //     alert("Failed to delete event. Please try again.");
+  //   }
+  // };
 
   // Handle View
   const handleView = (event) => {
@@ -347,6 +350,16 @@ const Event = () => {
     }
   };
 
+  // Handle search
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
+    setPage(0); // Reset to first page on search
+  };
+
+  const filteredData = eventList.filter((row) =>
+    row.eventTitle.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   // Handle Pagination
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -369,16 +382,25 @@ const Event = () => {
         <Typography
           variant="h4"
           gutterBottom
-          sx={{ textAlign: "center", marginBottom: 2 }}
+          sx={{ textAlign: "center", marginTop: 1 }}
         >
           Manage Events
         </Typography>
 
         {/* Events Upload Button */}
         <Box sx={{ textAlign: "center", marginBottom: 3 }}>
+          <TextField
+            label="Search User"
+            sx={{ width: "300px", marginRight: "10px" }}
+            InputProps={{
+              sx: { height: "50px", fontSize: "16px", padding: "0 5px" },
+            }}
+            value={searchQuery}
+            onChange={handleSearch}
+          />
           <Button
             variant="contained"
-            sx={{ backgroundColor: "#84764F" }}
+            sx={{ backgroundColor: "#84764F", marginTop: "5px" }}
             onClick={() => setUploadModalOpen(true)}
             startIcon={<CloudUploadIcon />}
           >
@@ -411,7 +433,7 @@ const Event = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {eventList
+              {filteredData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((event, index) => (
                   <TableRow key={index}>
@@ -448,7 +470,7 @@ const Event = () => {
                       >
                         View
                       </Button>
-                      <Button
+                      {/* <Button
                         startIcon={<DeleteIcon />}
                         variant="contained"
                         sx={{ backgroundColor: "red" }}
@@ -457,7 +479,7 @@ const Event = () => {
                         }}
                       >
                         DELETE
-                      </Button>
+                      </Button> */}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -467,7 +489,7 @@ const Event = () => {
           <TablePagination
             rowsPerPageOptions={[10, 20, 30]}
             component="div"
-            count={eventList.length}
+            count={filteredData.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

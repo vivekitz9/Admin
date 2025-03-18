@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import { Edit } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import DeleteIcon from "@mui/icons-material/Delete";
+// import DeleteIcon from "@mui/icons-material/Delete";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
 import axios from "axios";
@@ -52,6 +52,8 @@ const News = () => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
   const role = user?.user?.data?.role;
@@ -197,41 +199,41 @@ const News = () => {
 
   // ****************************  Delete News function  *********************************
 
-  const handleDelete = async (news) => {
-    if (!news?.id) {
-      console.error("Invalid news object: Missing ID");
-      return;
-    }
+  // const handleDelete = async (news) => {
+  //   if (!news?.id) {
+  //     console.error("Invalid news object: Missing ID");
+  //     return;
+  //   }
 
-    if (!token) {
-      console.error("Authorization token is missing!");
-      return;
-    }
+  //   if (!token) {
+  //     console.error("Authorization token is missing!");
+  //     return;
+  //   }
 
-    // Show confirmation alert
-    const isConfirmed = window.confirm(
-      `Are you sure you want to delete this news?`
-    );
-    if (!isConfirmed) {
-      console.log("Delete action canceled.");
-      return;
-    }
+  //   // Show confirmation alert
+  //   const isConfirmed = window.confirm(
+  //     `Are you sure you want to delete this news?`
+  //   );
+  //   if (!isConfirmed) {
+  //     console.log("Delete action canceled.");
+  //     return;
+  //   }
 
-    try {
-      await axios.delete(`${DELETEAPI}/${news.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  //   try {
+  //     await axios.delete(`${DELETEAPI}/${news.id}`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
 
-      alert(`News with ID ${news.id} deleted successfully.`); // Show success alert
-      fetchAllNews();
-    } catch (error) {
-      console.error(
-        "Error deleting news:",
-        error.response?.data?.message || error.message || "Unknown error"
-      );
-      alert("Failed to delete news. Please try again.");
-    }
-  };
+  //     alert(`News with ID ${news.id} deleted successfully.`); // Show success alert
+  //     fetchAllNews();
+  //   } catch (error) {
+  //     console.error(
+  //       "Error deleting news:",
+  //       error.response?.data?.message || error.message || "Unknown error"
+  //     );
+  //     alert("Failed to delete news. Please try again.");
+  //   }
+  // };
 
   // Handle View
   const handleView = (news) => {
@@ -339,6 +341,16 @@ const News = () => {
     }
   };
 
+  // handle search
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
+    setPage(0); // Reset to first page on search
+  };
+
+  const filteredData = newsList.filter((row) =>
+    row.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   // Handle Pagination
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -361,16 +373,25 @@ const News = () => {
         <Typography
           variant="h4"
           gutterBottom
-          sx={{ textAlign: "center", marginBottom: 2 }}
+          sx={{ textAlign: "center", marginTop: 1 }}
         >
           Manage News
         </Typography>
 
         {/* News Upload Button */}
         <Box sx={{ textAlign: "center", marginBottom: 3 }}>
+          <TextField
+            label="Search User"
+            sx={{ width: "300px", marginRight: "10px" }}
+            InputProps={{
+              sx: { height: "50px", fontSize: "16px", padding: "0 5px" },
+            }}
+            value={searchQuery}
+            onChange={handleSearch}
+          />
           <Button
             variant="contained"
-            sx={{ backgroundColor: "#84764F" }}
+            sx={{ backgroundColor: "#84764F", marginTop: "5px" }}
             onClick={() => setUploadModalOpen(true)}
             startIcon={<CloudUploadIcon />}
           >
@@ -401,7 +422,7 @@ const News = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {newsList
+              {filteredData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((news, index) => (
                   <TableRow key={index}>
@@ -447,7 +468,7 @@ const News = () => {
                       >
                         View
                       </Button>
-                      <Button
+                      {/* <Button
                         startIcon={<DeleteIcon />}
                         variant="contained"
                         sx={{ backgroundColor: "red" }}
@@ -456,7 +477,7 @@ const News = () => {
                         }}
                       >
                         DELETE
-                      </Button>
+                      </Button> */}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -466,7 +487,7 @@ const News = () => {
           <TablePagination
             rowsPerPageOptions={[10, 20, 30]}
             component="div"
-            count={newsList.length}
+            count={filteredData.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

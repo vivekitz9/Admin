@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import { Edit } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import DeleteIcon from "@mui/icons-material/Delete";
+// import DeleteIcon from "@mui/icons-material/Delete";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
 import axios from "axios";
@@ -171,39 +171,39 @@ const Banner = () => {
     }
   };
 
-  const handleDelete = async (banner) => {
-    if (!banner?.id) {
-      console.error("Invalid event object: Missing ID");
-      return;
-    }
+  // const handleDelete = async (banner) => {
+  //   if (!banner?.id) {
+  //     console.error("Invalid event object: Missing ID");
+  //     return;
+  //   }
 
-    if (!token) {
-      console.error("Authorization token is missing!");
-      return;
-    }
+  //   if (!token) {
+  //     console.error("Authorization token is missing!");
+  //     return;
+  //   }
 
-    // Show confirmation alert
-    const isConfirmed = window.confirm(
-      `Are you sure you want to delete this banner?`
-    );
-    if (!isConfirmed) {
-      console.log("Delete action canceled.");
-      return;
-    }
+  //   // Show confirmation alert
+  //   const isConfirmed = window.confirm(
+  //     `Are you sure you want to delete this banner?`
+  //   );
+  //   if (!isConfirmed) {
+  //     console.log("Delete action canceled.");
+  //     return;
+  //   }
 
-    try {
-      await axios.delete(`${DELETEAPI}/${banner.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchAllBanners();
-    } catch (error) {
-      console.error(
-        "Error deleting Banner:",
-        error.response?.data?.message || error.message || "Unknown error"
-      );
-      alert("Failed to delete Banner. Please try again.");
-    }
-  };
+  //   try {
+  //     await axios.delete(`${DELETEAPI}/${banner.id}`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+  //     fetchAllBanners();
+  //   } catch (error) {
+  //     console.error(
+  //       "Error deleting Banner:",
+  //       error.response?.data?.message || error.message || "Unknown error"
+  //     );
+  //     alert("Failed to delete Banner. Please try again.");
+  //   }
+  // };
 
   // Handle View
   const handleView = (banner) => {
@@ -380,7 +380,7 @@ const Banner = () => {
                       >
                         View
                       </Button>
-                      <Button
+                      {/* <Button
                         startIcon={<DeleteIcon />}
                         variant="contained"
                         sx={{ backgroundColor: "red", marginLeft: "15px" }}
@@ -389,7 +389,7 @@ const Banner = () => {
                         }}
                       >
                         DELETE
-                      </Button>
+                      </Button> */}
                     </TableCell>
                   </TableRow>
                 ))}

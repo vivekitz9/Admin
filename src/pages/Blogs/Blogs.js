@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import { Edit } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import DeleteIcon from "@mui/icons-material/Delete";
+// import DeleteIcon from "@mui/icons-material/Delete";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
 import axios from "axios";
@@ -171,39 +171,39 @@ const Blogs = () => {
     }
   };
 
-  const handleDelete = async (blog) => {
-    if (!blog?.id) {
-      console.error("Invalid event object: Missing ID");
-      return;
-    }
+  // const handleDelete = async (blog) => {
+  //   if (!blog?.id) {
+  //     console.error("Invalid event object: Missing ID");
+  //     return;
+  //   }
 
-    if (!token) {
-      console.error("Authorization token is missing!");
-      return;
-    }
+  //   if (!token) {
+  //     console.error("Authorization token is missing!");
+  //     return;
+  //   }
 
-    // Show confirmation alert
-    const isConfirmed = window.confirm(
-      `Are you sure you want to delete this blog?`
-    );
-    if (!isConfirmed) {
-      console.log("Delete action canceled.");
-      return;
-    }
+  //   // Show confirmation alert
+  //   const isConfirmed = window.confirm(
+  //     `Are you sure you want to delete this blog?`
+  //   );
+  //   if (!isConfirmed) {
+  //     console.log("Delete action canceled.");
+  //     return;
+  //   }
 
-    try {
-      await axios.delete(`${DELETEAPI}/${blog.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchAllBlogs();
-    } catch (error) {
-      console.error(
-        "Error deleting blog:",
-        error.response?.data?.message || error.message || "Unknown error"
-      );
-      alert("Failed to delete blog. Please try again.");
-    }
-  };
+  //   try {
+  //     await axios.delete(`${DELETEAPI}/${blog.id}`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+  //     fetchAllBlogs();
+  //   } catch (error) {
+  //     console.error(
+  //       "Error deleting blog:",
+  //       error.response?.data?.message || error.message || "Unknown error"
+  //     );
+  //     alert("Failed to delete blog. Please try again.");
+  //   }
+  // };
 
   // Handle View
   const handleView = (blog) => {
@@ -380,7 +380,7 @@ const Blogs = () => {
                       >
                         View
                       </Button>
-                      <Button
+                      {/* <Button
                         startIcon={<DeleteIcon />}
                         variant="contained"
                         sx={{ backgroundColor: "red", marginLeft: "15px" }}
@@ -389,7 +389,7 @@ const Blogs = () => {
                         }}
                       >
                         DELETE
-                      </Button>
+                      </Button> */}
                     </TableCell>
                   </TableRow>
                 ))}

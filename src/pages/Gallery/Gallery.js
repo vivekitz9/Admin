@@ -19,7 +19,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EditIcon from "@mui/icons-material/Edit";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
-import DeleteIcon from "@mui/icons-material/Delete";
+// import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 
 const GETAPI = `${baseURL}api/v1/gallery`;
@@ -125,41 +125,43 @@ const Gallery = () => {
     setEditModalOpen(true);
   };
 
-  const handleDelete = async (image) => {
-    console.log("Image ---> ", image);
-    if (!image?.id) {
-      console.error("Invalid image object: Missing ID");
-      return;
-    }
+  // ******************  Handle Delete  *******************
 
-    if (!token) {
-      console.error("Authorization token is missing!");
-      return;
-    }
+  // const handleDelete = async (image) => {
+  //   console.log("Image ---> ", image);
+  //   if (!image?.id) {
+  //     console.error("Invalid image object: Missing ID");
+  //     return;
+  //   }
 
-    // Show confirmation alert
-    const isConfirmed = window.confirm(
-      `Are you sure you want to delete this image?`
-    );
-    if (!isConfirmed) {
-      console.log("Delete action canceled.");
-      return;
-    }
+  //   if (!token) {
+  //     console.error("Authorization token is missing!");
+  //     return;
+  //   }
 
-    try {
-      await axios.delete(`${DELETEAPI}/${image.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  //   // Show confirmation alert
+  //   const isConfirmed = window.confirm(
+  //     `Are you sure you want to delete this image?`
+  //   );
+  //   if (!isConfirmed) {
+  //     console.log("Delete action canceled.");
+  //     return;
+  //   }
 
-      fetchAllImage();
-    } catch (error) {
-      console.error(
-        "Error deleting news:",
-        error.response?.data?.message || error.message || "Unknown error"
-      );
-      alert("Failed to delete news. Please try again.");
-    }
-  };
+  //   try {
+  //     await axios.delete(`${DELETEAPI}/${image.id}`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+
+  //     fetchAllImage();
+  //   } catch (error) {
+  //     console.error(
+  //       "Error deleting news:",
+  //       error.response?.data?.message || error.message || "Unknown error"
+  //     );
+  //     alert("Failed to delete news. Please try again.");
+  //   }
+  // };
 
   const handleEditImage = async () => {
     if (selectedImage.id && editData.title && editData.file) {
@@ -355,7 +357,7 @@ const Gallery = () => {
                   Edit
                 </Button>
 
-                <Button
+                {/* <Button
                   startIcon={<DeleteIcon />}
                   variant="contained"
                   sx={{ backgroundColor: "red", marginLeft: "5px" }}
@@ -364,7 +366,7 @@ const Gallery = () => {
                   }}
                 >
                   DELETE
-                </Button>
+                </Button> */}
               </ListItemSecondaryAction>
             </ListItem>
           ))}
