@@ -19,11 +19,13 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EditIcon from "@mui/icons-material/Edit";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
+// import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 
 const GETAPI = `${baseURL}api/v1/gallery`;
 const POSTAPI = `${baseURL}api/v1/gallery`;
 const PUTAPI = `${baseURL}api/v1/gallery`;
+const DELETEAPI = `${baseURL}api/v1/gallery`;
 
 const Gallery = () => {
   const [images, setImages] = useState([]);
@@ -87,7 +89,7 @@ const Gallery = () => {
     if (newImage.file && newImage.title) {
       const formData = new FormData();
       formData.append("title", newImage.title);
-      console.log('newImage.file---->', newImage.file);
+      console.log("newImage.file---->", newImage.file);
 
       if (newImage.file) {
         if (newImage?.file?.type == "video/mp4") {
@@ -122,6 +124,44 @@ const Gallery = () => {
     setSelectedImage(image);
     setEditModalOpen(true);
   };
+
+  // ******************  Handle Delete  *******************
+
+  // const handleDelete = async (image) => {
+  //   console.log("Image ---> ", image);
+  //   if (!image?.id) {
+  //     console.error("Invalid image object: Missing ID");
+  //     return;
+  //   }
+
+  //   if (!token) {
+  //     console.error("Authorization token is missing!");
+  //     return;
+  //   }
+
+  //   // Show confirmation alert
+  //   const isConfirmed = window.confirm(
+  //     `Are you sure you want to delete this image?`
+  //   );
+  //   if (!isConfirmed) {
+  //     console.log("Delete action canceled.");
+  //     return;
+  //   }
+
+  //   try {
+  //     await axios.delete(`${DELETEAPI}/${image.id}`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+
+  //     fetchAllImage();
+  //   } catch (error) {
+  //     console.error(
+  //       "Error deleting news:",
+  //       error.response?.data?.message || error.message || "Unknown error"
+  //     );
+  //     alert("Failed to delete news. Please try again.");
+  //   }
+  // };
 
   const handleEditImage = async () => {
     if (selectedImage.id && editData.title && editData.file) {
@@ -160,7 +200,8 @@ const Gallery = () => {
 
     const newStatus = image.toggle === "0" ? 1 : 0; // Determine new status
     const confirmation = window.confirm(
-      `Are you sure you want to ${newStatus === "1" ? "activate" : "deactivate"
+      `Are you sure you want to ${
+        newStatus === "1" ? "activate" : "deactivate"
       } this Image?`
     );
 
@@ -214,7 +255,7 @@ const Gallery = () => {
     }
   }, []);
 
-  console.log('newImage---->', newImage);
+  console.log("newImage---->", newImage);
 
   return (
     <Box sx={{ padding: 2 }}>
@@ -254,18 +295,20 @@ const Gallery = () => {
         <List>
           {images.map((image) => (
             <ListItem key={image.image} sx={{ borderBottom: "1px solid #ddd" }}>
-              {image.image !== "" ? <CardMedia
-                component="img"
-                image={image.image}
-                alt={image.title}
-                sx={{
-                  width: "100px",
-                  height: "100px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                  marginRight: 2,
-                }}
-              /> :
+              {image.image !== "" ? (
+                <CardMedia
+                  component="img"
+                  image={image.image}
+                  alt={image.title}
+                  sx={{
+                    width: "100px",
+                    height: "100px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                    marginRight: 2,
+                  }}
+                />
+              ) : (
                 <CardMedia
                   component="video"
                   image={image?.video}
@@ -277,7 +320,8 @@ const Gallery = () => {
                     borderRadius: "8px",
                     marginRight: 2,
                   }}
-                />}
+                />
+              )}
 
               <ListItemText
                 primary={image.title}
@@ -302,16 +346,27 @@ const Gallery = () => {
                     color="primary"
                   />
                 )}
-
                 <Button
                   onClick={() => {
                     handleEdit(image);
                   }}
                   startIcon={<EditIcon />}
+                  variant="contained"
                   sx={{ marginLeft: 2 }}
                 >
                   Edit
                 </Button>
+
+                {/* <Button
+                  startIcon={<DeleteIcon />}
+                  variant="contained"
+                  sx={{ backgroundColor: "red", marginLeft: "5px" }}
+                  onClick={() => {
+                    handleDelete(image);
+                  }}
+                >
+                  DELETE
+                </Button> */}
               </ListItemSecondaryAction>
             </ListItem>
           ))}

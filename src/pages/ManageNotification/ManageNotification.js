@@ -20,31 +20,29 @@ import {
 } from "@mui/material";
 import { Edit } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-// import DeleteIcon from "@mui/icons-material/Delete";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
+import SendIcon from "@mui/icons-material/Send";
 import axios from "axios";
 
-const GETAPI = `${baseURL}api/v1/blogs`;
-const POSTAPI = `${baseURL}api/v1/blogs`;
-const PUTAPI = `${baseURL}api/v1/blogs`;
-const DELETEAPI = `${baseURL}api/v1/blogs`;
+const GETAPI = `${baseURL}api/v1/notification/fetchAllNotifications`;
+const POSTAPI = `${baseURL}api/v1/notification/createNotification`;
+const PUTAPI = `${baseURL}api/v1`;
+const SENDNOTIFICATION = `${baseURL}api/v1/notification/sendNotification`;
 
-const Blogs = () => {
-  const [blogs, setBlogs] = useState([]);
+const ManageNotification = () => {
+  const [notifications, setNotifications] = useState([]);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [newBlog, setNewBlog] = useState({
+  const [newNotification, setNewNotification] = useState({
     title: "",
     content: "",
-    file: null,
   });
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editData, setEditData] = useState({
     title: "",
     content: "",
-    file: null,
   });
-  const [selectedBlog, setSelectedBlog] = useState(null);
+  const [selectedNotification, setSelectedNotification] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
   // For Pagination
@@ -54,10 +52,9 @@ const Blogs = () => {
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
   const role = user?.user?.data?.role;
+  const userName = user?.user?.data?.userName;
 
-  console.log(role);
-
-  const fetchAllBlogs = async () => {
+  const fetchAllNotifications = async () => {
     try {
       const response = await axios.get(GETAPI, {
         headers: {
@@ -65,7 +62,9 @@ const Blogs = () => {
         },
       });
 
-      setBlogs(response.data.data || []); // Extract users from API response
+      console.log("response : ", response.data.data.Items);
+
+      setNotifications(response.data.data.Items || []); // Extract users from API response
     } catch (err) {
       console.log(err.response?.data?.message);
     }
@@ -74,67 +73,87 @@ const Blogs = () => {
   // Handle Modal Close
   const closeUploadModal = () => {
     setUploadModalOpen(false);
-    setNewBlog({ title: "", content: "", file: null });
+    setNewNotification({ title: "", content: "" });
   };
 
   const closeEditModal = () => {
     setEditModalOpen(false);
-    setEditData({ title: "", content: "", file: null });
-    setSelectedBlog(null);
+    setEditData({ title: "", content: "" });
+    setSelectedNotification(null);
   };
 
   const closeViewModal = () => {
     setViewModalOpen(false);
-    setSelectedBlog(null);
+    setSelectedNotification(null);
   };
 
-  // Handle File Change
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setNewBlog((prev) => ({ ...prev, file }));
-  };
+  // const handleFileChange = (e) => {
+  //   const file = e.target.files[0];
+  //   setNewNotification((prev) => ({ ...prev, file }));
+  // };
 
-  const handlePostBlog = async () => {
-    if (newBlog.title && newBlog.content && newBlog.file) {
+  const handlePostNotification = async () => {
+    console.log("New Notification ---> ", newNotification);
+
+    if (newNotification?.title && newNotification?.content) {
       const formData = new FormData();
-      formData.append("title", newBlog.title);
-      formData.append("content", newBlog.content);
-      if (newBlog.file) {
-        formData.append("image", newBlog.file);
+      formData.append("notificationTitle", newNotification.title);
+      formData.append("notificationDescription", newNotification.content);
+
+      //  Debugging - Check if FormData is correctly populated
+      console.log("FormData Entries:");
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
       }
 
       try {
         const response = await axios.post(POSTAPI, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
           },
         });
 
+        console.log("Response from API:", response);
+
         if (response.status === 200) {
-          fetchAllBlogs();
+          // fetchAllNotifications(); // Uncomment if needed
           closeUploadModal();
+          fetchAllNotifications();
         }
       } catch (error) {
-        console.error("Error posting blog:", error);
+        if (error.response) {
+          console.error(
+            "Server responded with error:",
+            error.response.status,
+            error.response.data
+          );
+        } else if (error.request) {
+          console.error(
+            "No response received. Possible network issue:",
+            error.request
+          );
+        } else {
+          console.error("Error in request setup:", error.message);
+        }
       }
+    } else {
+      console.error("Title and content are required!");
     }
   };
 
   // Handle Edit
-  const handleEdit = (blog) => {
+  const handleEdit = (notification) => {
     setEditData({
-      title: blog.title,
-      content: blog.content,
-      file: null,
+      title: notification.title,
+      content: notification.content,
     });
-    setSelectedBlog(blog);
+    setSelectedNotification(notification);
     setEditModalOpen(true);
   };
 
   const handleSaveEdit = async () => {
-    if (!selectedBlog || !selectedBlog.id) {
-      console.error("No blog selected for editing");
+    if (!selectedNotification || !selectedNotification.id) {
+      console.error("No Notification selected for editing");
       return;
     }
 
@@ -146,13 +165,10 @@ const Blogs = () => {
     const formData = new FormData();
     formData.append("title", editData.title);
     formData.append("content", editData.content);
-    if (editData.file) {
-      formData.append("image", editData.file);
-    }
 
     try {
       const response = await axios.put(
-        `${PUTAPI}/${selectedBlog.id}`,
+        `${PUTAPI}/${selectedNotification.id}`,
         formData,
         {
           headers: {
@@ -162,101 +178,49 @@ const Blogs = () => {
         }
       );
 
-      fetchAllBlogs();
-      console.log("Blog updated successfully:", response.data);
+      fetchAllNotifications();
+      console.log("Notifications updated successfully:", response.data);
 
       closeEditModal();
     } catch (error) {
-      console.error("Error updating blog:", error);
+      console.error("Error updating Notifications:", error);
     }
   };
 
-  // const handleDelete = async (blog) => {
-  //   if (!blog?.id) {
-  //     console.error("Invalid event object: Missing ID");
-  //     return;
-  //   }
-
-  //   if (!token) {
-  //     console.error("Authorization token is missing!");
-  //     return;
-  //   }
-
-  //   // Show confirmation alert
-  //   const isConfirmed = window.confirm(
-  //     `Are you sure you want to delete this blog?`
-  //   );
-  //   if (!isConfirmed) {
-  //     console.log("Delete action canceled.");
-  //     return;
-  //   }
-
-  //   try {
-  //     await axios.delete(`${DELETEAPI}/${blog.id}`, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
-  //     fetchAllBlogs();
-  //   } catch (error) {
-  //     console.error(
-  //       "Error deleting blog:",
-  //       error.response?.data?.message || error.message || "Unknown error"
-  //     );
-  //     alert("Failed to delete blog. Please try again.");
-  //   }
-  // };
-
   // Handle View
-  const handleView = (blog) => {
-    setSelectedBlog(blog);
+  const handleView = (notification) => {
+    setSelectedNotification(notification);
     setViewModalOpen(true);
   };
 
-  const toggleActiveStatus = async (blog) => {
-    console.log("Blog Data  :  ", blog);
+  const handleSendNotifiction = async (notification) => {
+    console.log(notification);
+    if (
+      notification.notificationTitle &&
+      notification.notificationDescription
+    ) {
+      const formData = new FormData();
+      formData.append("title", notification.notificationTitle);
+      formData.append("description", notification.notificationDescription);
 
-    const newStatus = blog.toggle === "0" ? "1" : "0"; // Determine new status
-    const confirmation = window.confirm(
-      `Are you sure you want to ${
-        newStatus === "1" ? "activate" : "deactivate"
-      } this blog?`
-    );
+      try {
+        console.log("FormData Entries:");
+        for (let pair of formData.entries()) {
+          console.log(pair[0], pair[1]);
+        }
+        const response = await axios.post(SENDNOTIFICATION, formData, {
+          headers: {
+            // Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
 
-    if (!confirmation) {
-      console.log("Toggle action cancelled");
-      return; // Stop execution if the user clicks Cancel
-    }
-
-    const formData = new FormData();
-    formData.append("title", blog.title);
-    formData.append("content", blog.content);
-
-    // Handle image properly
-    if (blog.image && typeof blog.image !== "string") {
-      formData.append("image", blog.image); // If it's a File object
-    } else if (typeof blog.image === "string") {
-      formData.append("imageUrl", blog.image); // If it's a URL, store as a string
-    }
-
-    // Toggle status correctly
-    formData.append("toggle", newStatus);
-
-    console.log("Form Data:");
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ": " + pair[1]); // Log each key-value pair
-    }
-
-    try {
-      const response = await axios.put(`${PUTAPI}/${blog.id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data", // Correct Content-Type for FormData
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      fetchAllBlogs();
-    } catch (error) {
-      console.error("Error updating blog:", error);
-      alert("Something went wrong. Please try again.");
+        console.log("Post Notification response --> ", response);
+      } catch (error) {
+        console.error("Error posting Notification:", error);
+      }
+    } else {
+      console.log("News data not found");
     }
   };
 
@@ -273,7 +237,7 @@ const Blogs = () => {
 
   useEffect(() => {
     if (token) {
-      fetchAllBlogs();
+      fetchAllNotifications();
     }
   }, []);
 
@@ -286,10 +250,10 @@ const Blogs = () => {
             gutterBottom
             sx={{ textAlign: "center", marginBottom: 2 }}
           >
-            Manage Blogs
+            Manage Notification
           </Typography>
 
-          {/* Blog Upload Button */}
+          {/* Notification Upload Button */}
           <Box sx={{ textAlign: "center", marginBottom: 3 }}>
             <Button
               variant="contained"
@@ -297,7 +261,7 @@ const Blogs = () => {
               onClick={() => setUploadModalOpen(true)}
               startIcon={<CloudUploadIcon />}
             >
-              Add Blog
+              Add Notification
             </Button>
           </Box>
         </Box>
@@ -305,12 +269,12 @@ const Blogs = () => {
       </Box>
 
       {/* Table View */}
-      {blogs.length === 0 ? (
+      {notifications.length === 0 ? (
         <Typography
           variant="h5"
           sx={{ textAlign: "center", color: "#888", marginTop: 20 }}
         >
-          No Blogs Available
+          No Notifications Available
         </Typography>
       ) : (
         <TableContainer component={Paper} sx={{ marginTop: 2 }}>
@@ -318,78 +282,44 @@ const Blogs = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Title</TableCell>
-                <TableCell>Image</TableCell>
-                <TableCell>Status</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {blogs
+              {notifications
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((blog, index) => (
+                .map((notification, index) => (
                   <TableRow key={index}>
-                    <TableCell>{blog.title}</TableCell>
+                    <TableCell>{notification.notificationTitle}</TableCell>
                     <TableCell>
-                      <img
-                        src={blog.image}
-                        alt={blog.title}
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                          borderRadius: "10px",
-                          objectFit: "cover",
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {role === "admin" && (
-                        <Switch
-                          checked={blog.toggle === "1"}
-                          onChange={() => toggleActiveStatus(blog)}
-                          color="primary"
-                        />
-                      )}
-
-                      {/* {blog.toggle === "1" ? "Active" : "Inactive"} */}
-                      <span
-                        style={{
-                          color: blog.toggle === "1" ? "#1686b8" : "red",
-                        }}
-                      >
-                        {blog.toggle === "1" ? "Active" : "Inactive"}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <IconButton onClick={() => handleEdit(blog)}>
+                      {/* <IconButton onClick={() => handleEdit(notification)}>
                         <Button
                           variant="contained"
                           sx={{ backgroundColor: "#84764F" }}
                           startIcon={<Edit />}
                           onClick={() => {
-                            handleEdit(blog);
+                            handleEdit(notification);
                             closeViewModal();
                           }}
                         >
                           Edit
                         </Button>
-                      </IconButton>
+                      </IconButton> */}
                       <Button
                         variant="contained"
                         sx={{ marginLeft: 1 }}
-                        onClick={() => handleView(blog)}
+                        onClick={() => handleView(notification)}
                       >
                         View
                       </Button>
-                      {/* <Button
-                        startIcon={<DeleteIcon />}
+                      <Button
                         variant="contained"
-                        sx={{ backgroundColor: "red", marginLeft: "15px" }}
-                        onClick={() => {
-                          handleDelete(blog);
-                        }}
+                        sx={{ marginLeft: 1 }}
+                        startIcon={<SendIcon />}
+                        onClick={() => handleSendNotifiction(notification)}
                       >
-                        DELETE
-                      </Button> */}
+                        Send Notification
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -399,7 +329,7 @@ const Blogs = () => {
           <TablePagination
             rowsPerPageOptions={[10, 20, 30]}
             component="div"
-            count={blogs.length}
+            count={notifications.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -408,7 +338,7 @@ const Blogs = () => {
         </TableContainer>
       )}
 
-      {/* Upload Blog Modal */}
+      {/* Upload Notification Modal */}
       <Dialog
         open={uploadModalOpen}
         onClose={closeUploadModal}
@@ -417,37 +347,31 @@ const Blogs = () => {
       >
         <DialogContent>
           <Typography variant="h6" gutterBottom>
-            Upload New Blog
+            Upload New Notification
           </Typography>
           <TextField
             fullWidth
-            label="Blog Title"
-            value={newBlog.title}
+            label="Notification Title"
+            value={newNotification.title}
             onChange={(e) =>
-              setNewBlog((prev) => ({ ...prev, title: e.target.value }))
+              setNewNotification((prev) => ({ ...prev, title: e.target.value }))
             }
             sx={{ marginBottom: 2 }}
           />
           <TextField
             fullWidth
-            label="Blog Description"
-            value={newBlog.content}
+            label="Notification Description"
+            value={newNotification.content}
             onChange={(e) =>
-              setNewBlog((prev) => ({ ...prev, content: e.target.value }))
+              setNewNotification((prev) => ({
+                ...prev,
+                content: e.target.value,
+              }))
             }
             multiline
             rows={7}
             sx={{ marginBottom: 2 }}
           />
-          <Button variant="contained" component="label">
-            Choose Image
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={handleFileChange}
-            />
-          </Button>
         </DialogContent>
         <DialogActions>
           <Button onClick={closeUploadModal} sx={{ color: "#808080" }}>
@@ -455,10 +379,10 @@ const Blogs = () => {
           </Button>
           <Button
             variant="contained"
-            onClick={handlePostBlog}
+            onClick={handlePostNotification}
             sx={{ backgroundColor: "#84764F" }}
             disabled={
-              !newBlog.title.trim() || !newBlog.content.trim() || !newBlog.file
+              !newNotification.title.trim() || !newNotification.content.trim()
             }
           >
             Post
@@ -466,7 +390,7 @@ const Blogs = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Edit Blog Modal */}
+      {/* Edit Notification Modal */}
       <Dialog
         open={editModalOpen}
         onClose={closeEditModal}
@@ -475,11 +399,11 @@ const Blogs = () => {
       >
         <DialogContent>
           <Typography variant="h6" gutterBottom>
-            Edit Blog
+            Edit Notification
           </Typography>
           <TextField
             fullWidth
-            label="Blog Title"
+            label="Notification Title"
             value={editData.title}
             onChange={(e) =>
               setEditData((prev) => ({ ...prev, title: e.target.value }))
@@ -488,7 +412,7 @@ const Blogs = () => {
           />
           <TextField
             fullWidth
-            label="Blog Description"
+            label="Notification Description"
             value={editData.content}
             onChange={(e) =>
               setEditData((prev) => ({ ...prev, content: e.target.value }))
@@ -497,17 +421,6 @@ const Blogs = () => {
             rows={7}
             sx={{ marginBottom: 2 }}
           />
-          <Button variant="contained" component="label">
-            Change Image
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={(e) =>
-                setEditData((prev) => ({ ...prev, file: e.target.files[0] }))
-              }
-            />
-          </Button>
         </DialogContent>
         <DialogActions>
           <Button onClick={closeEditModal} sx={{ color: "#808080" }}>
@@ -524,7 +437,7 @@ const Blogs = () => {
         </DialogActions>
       </Dialog>
 
-      {/* View Blog Modal */}
+      {/* View Notification Modal */}
       <Dialog
         open={viewModalOpen}
         onClose={closeViewModal}
@@ -533,20 +446,10 @@ const Blogs = () => {
       >
         <DialogContent>
           <Typography variant="h4" gutterBottom>
-            {selectedBlog?.title}
+            {selectedNotification?.notificationTitle}
           </Typography>
-          <img
-            src={selectedBlog?.image}
-            alt={selectedBlog?.title}
-            // style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }}
-            style={{
-              width: "100%",
-              height: "300px",
-              objectFit: "cover",
-            }}
-          />
           <Typography variant="body1" sx={{ marginTop: 2 }}>
-            {selectedBlog?.content}
+            {selectedNotification?.notificationDescription}
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -559,7 +462,7 @@ const Blogs = () => {
             startIcon={<Edit />}
             onClick={() => {
               closeViewModal();
-              handleEdit(selectedBlog);
+              handleEdit(selectedNotification);
             }}
           >
             Edit
@@ -570,4 +473,4 @@ const Blogs = () => {
   );
 };
 
-export default Blogs;
+export default ManageNotification;

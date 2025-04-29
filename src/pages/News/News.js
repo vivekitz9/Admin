@@ -20,13 +20,17 @@ import {
 } from "@mui/material";
 import { Edit } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+// import DeleteIcon from "@mui/icons-material/Delete";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
 import axios from "axios";
 
 const GETAPI = `${baseURL}api/v1/admin/news`;
 const POSTAPI = `${baseURL}api/v1/news`;
-const PUTAPI = `${baseURL}api/v1/admin/news`;
+const PUTAPI = `${baseURL}api/v1/news`;
+const DELETEAPI = `${baseURL}api/v1/news`;
+
+const POSTNOTIFICATION = `${baseURL}api/v1/notification/sendNotification`;
 
 const News = () => {
   const [newsList, setNewsList] = useState([]);
@@ -48,21 +52,21 @@ const News = () => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
   const role = user?.user?.data?.role;
 
   function formatDate(date) {
     var d = new Date(date),
-      month = '' + (d.getMonth() + 1),
-      day = '' + d.getDate(),
+      month = "" + (d.getMonth() + 1),
+      day = "" + d.getDate(),
       year = d.getFullYear();
 
-    if (month.length < 2)
-      month = '0' + month;
-    if (day.length < 2)
-      day = '0' + day;
-    return [year, month, day].join('-');
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
+    return [year, month, day].join("-");
   }
 
   //Fetch All News
@@ -74,7 +78,11 @@ const News = () => {
         },
       });
 
-      setNewsList(response.data.data.sort((a, b) => new Date(b?.newsDate) - new Date(a?.newsDate)) || []); // Extract users from API response
+      setNewsList(
+        response.data.data.sort(
+          (a, b) => new Date(b?.newsDate) - new Date(a?.newsDate)
+        ) || []
+      ); // Extract users from API response
     } catch (err) {
       console.log(err.response?.data?.message);
     }
@@ -161,7 +169,7 @@ const News = () => {
 
     const updatedNewsList = {
       title: editData.title,
-      content: editData.description,
+      description: editData.description,
       newsDate: editData.newsDate,
       image: editData.file
         ? URL.createObjectURL(editData.file)
@@ -189,21 +197,106 @@ const News = () => {
     }
   };
 
+  // ****************************  Delete News function  *********************************
+
+  // const handleDelete = async (news) => {
+  //   if (!news?.id) {
+  //     console.error("Invalid news object: Missing ID");
+  //     return;
+  //   }
+
+  //   if (!token) {
+  //     console.error("Authorization token is missing!");
+  //     return;
+  //   }
+
+  //   // Show confirmation alert
+  //   const isConfirmed = window.confirm(
+  //     `Are you sure you want to delete this news?`
+  //   );
+  //   if (!isConfirmed) {
+  //     console.log("Delete action canceled.");
+  //     return;
+  //   }
+
+  //   try {
+  //     await axios.delete(`${DELETEAPI}/${news.id}`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+
+  //     alert(`News with ID ${news.id} deleted successfully.`); // Show success alert
+  //     fetchAllNews();
+  //   } catch (error) {
+  //     console.error(
+  //       "Error deleting news:",
+  //       error.response?.data?.message || error.message || "Unknown error"
+  //     );
+  //     alert("Failed to delete news. Please try again.");
+  //   }
+  // };
+
   // Handle View
   const handleView = (news) => {
     setSelectedNews(news);
     setViewModalOpen(true);
   };
 
+  function getFirst20Words(text) {
+    let words = text.split(/\s+/).slice(0, 20); // Split by spaces and take first 20 words
+    return words.join(" ") + "..."; // Join back into a string
+  }
+
+  const postNotifiction = async (news) => {
+    console.log("Post Notification --- > : ", news);
+    if (news.title && news.description) {
+      const formData = new FormData();
+      formData.append("title", news.title);
+      formData.append("description", getFirst20Words(news.description));
+      if (news.image) {
+        formData.append("file", news.image);
+      }
+
+      try {
+        console.log("FormData Entries:");
+        for (let pair of formData.entries()) {
+          console.log(pair[0], pair[1]);
+        }
+        console.log("Post notification Url ---> ", POSTNOTIFICATION);
+        const response = await axios.post(POSTNOTIFICATION, formData, {
+          headers: {
+            // Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        console.log("Post Notification response --> ", response);
+
+        if (response.status === 200) {
+          fetchAllNews();
+          closeUploadModal();
+        }
+      } catch (error) {
+        console.error("Error posting News:", error);
+      }
+    } else {
+      console.log("News data not found");
+    }
+  };
+
   const toggleActiveStatus = async (news) => {
+    if (news.toggle === "0") {
+      await postNotifiction(news);
+    }
+
     console.log("news Data  :  ", news);
 
     const newStatus = news.toggle === "0" ? "1" : "0"; // Determine new status
     const newVisible = news.toggle === "0" ? "true" : "false"; // Determine new status
 
-// console.log('newVisible------>', newVisible);
+    // console.log('newVisible------>', newVisible);
     const confirmation = window.confirm(
-      `Are you sure you want to ${newStatus === "1" ? "activate" : "deactivate"
+      `Are you sure you want to ${
+        newStatus === "1" ? "activate" : "deactivate"
       } this news?`
     );
 
@@ -226,10 +319,11 @@ const News = () => {
 
     // Toggle status correctly
     formData.append("toggle", newStatus);
+    // formData.append("isVisible", isVisible);
 
-    console.log("Form Data:");
+    console.log("FormData Entries:");
     for (let pair of formData.entries()) {
-      console.log(pair[0] + ": " + pair[1]); // Log each key-value pair
+      console.log(pair[0], pair[1]);
     }
 
     try {
@@ -246,6 +340,16 @@ const News = () => {
       alert("Something went wrong. Please try again.");
     }
   };
+
+  // handle search
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
+    setPage(0); // Reset to first page on search
+  };
+
+  const filteredData = newsList.filter((row) =>
+    row.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Handle Pagination
   const handleChangePage = (event, newPage) => {
@@ -269,16 +373,25 @@ const News = () => {
         <Typography
           variant="h4"
           gutterBottom
-          sx={{ textAlign: "center", marginBottom: 2 }}
+          sx={{ textAlign: "center", marginTop: 1 }}
         >
           Manage News
         </Typography>
 
         {/* News Upload Button */}
         <Box sx={{ textAlign: "center", marginBottom: 3 }}>
+          <TextField
+            label="Search User"
+            sx={{ width: "300px", marginRight: "10px" }}
+            InputProps={{
+              sx: { height: "50px", fontSize: "16px", padding: "0 5px" },
+            }}
+            value={searchQuery}
+            onChange={handleSearch}
+          />
           <Button
             variant="contained"
-            sx={{ backgroundColor: "#84764F" }}
+            sx={{ backgroundColor: "#84764F", marginTop: "5px" }}
             onClick={() => setUploadModalOpen(true)}
             startIcon={<CloudUploadIcon />}
           >
@@ -309,7 +422,7 @@ const News = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {newsList
+              {filteredData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((news, index) => (
                   <TableRow key={index}>
@@ -355,6 +468,16 @@ const News = () => {
                       >
                         View
                       </Button>
+                      {/* <Button
+                        startIcon={<DeleteIcon />}
+                        variant="contained"
+                        sx={{ backgroundColor: "red" }}
+                        onClick={() => {
+                          handleDelete(news);
+                        }}
+                      >
+                        DELETE
+                      </Button> */}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -364,7 +487,7 @@ const News = () => {
           <TablePagination
             rowsPerPageOptions={[10, 20, 30]}
             component="div"
-            count={newsList.length}
+            count={filteredData.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
