@@ -454,6 +454,10 @@ import {
   TextField,
   MenuItem,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
 import { baseURL } from "../../assets/BaseUrl";
 
@@ -471,6 +475,9 @@ const AllUsers = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
 
@@ -486,6 +493,18 @@ const AllUsers = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ***************** Handle View ******************
+
+  const handleView = (temp) => {
+    setSelectedUser(temp);
+    setViewModalOpen(true);
+  };
+
+  const closeViewModal = () => {
+    setViewModalOpen(false);
+    setSelectedUser(null);
   };
 
   useEffect(() => {
@@ -585,6 +604,13 @@ const AllUsers = () => {
                         primary={`${user.fullName} (${user.userName})`}
                         secondary={`${user.email} | Gender: ${user.gender}`}
                       />
+                      <Button
+                        variant="contained"
+                        sx={{ marginLeft: 1 }}
+                        onClick={() => handleView(user)}
+                      >
+                        View
+                      </Button>
                     </ListItem>
                   </Paper>
                 ))}
@@ -604,6 +630,45 @@ const AllUsers = () => {
           />
         </Card>
       )}
+
+      {/* Open view Modal */}
+      <Dialog
+        open={viewModalOpen}
+        onClose={closeViewModal}
+        maxWidth="sm"
+        fullWidth
+      >
+        <img
+          src={selectedUser?.image}
+          alt={selectedUser?.fullName}
+          style={{
+            width: "100%",
+            height: "300px",
+            objectFit: "cover",
+          }}
+        />
+        <DialogContent>
+          <Typography>FULL NAME : {selectedUser?.fullName}</Typography>
+
+          <Typography>USER NAME : {selectedUser?.userName}</Typography>
+
+          <Typography>PHONE NUMBER : {selectedUser?.mobile}</Typography>
+
+          <Typography>DATE OF BIRTH : {selectedUser?.dob}</Typography>
+
+          <Typography>GRNDER : {selectedUser?.gender}</Typography>
+
+          <Typography>DISTRICT : {selectedUser?.district}</Typography>
+
+          <Typography>State : {selectedUser?.state}</Typography>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={closeViewModal} variant="contained">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

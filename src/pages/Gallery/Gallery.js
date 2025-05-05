@@ -19,7 +19,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EditIcon from "@mui/icons-material/Edit";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
-// import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 
 const GETAPI = `${baseURL}api/v1/gallery`;
@@ -46,7 +46,6 @@ const Gallery = () => {
 
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
-
   const role = user?.user?.data?.role;
 
   // Fetch All Image
@@ -127,41 +126,41 @@ const Gallery = () => {
 
   // ******************  Handle Delete  *******************
 
-  // const handleDelete = async (image) => {
-  //   console.log("Image ---> ", image);
-  //   if (!image?.id) {
-  //     console.error("Invalid image object: Missing ID");
-  //     return;
-  //   }
+  const handleDelete = async (image) => {
+    console.log("Image ---> ", image);
+    if (!image?.id) {
+      console.error("Invalid image object: Missing ID");
+      return;
+    }
 
-  //   if (!token) {
-  //     console.error("Authorization token is missing!");
-  //     return;
-  //   }
+    if (!token) {
+      console.error("Authorization token is missing!");
+      return;
+    }
 
-  //   // Show confirmation alert
-  //   const isConfirmed = window.confirm(
-  //     `Are you sure you want to delete this image?`
-  //   );
-  //   if (!isConfirmed) {
-  //     console.log("Delete action canceled.");
-  //     return;
-  //   }
+    // Show confirmation alert
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete this image?`
+    );
+    if (!isConfirmed) {
+      console.log("Delete action canceled.");
+      return;
+    }
 
-  //   try {
-  //     await axios.delete(`${DELETEAPI}/${image.id}`, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
+    try {
+      await axios.delete(`${DELETEAPI}/${image.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-  //     fetchAllImage();
-  //   } catch (error) {
-  //     console.error(
-  //       "Error deleting news:",
-  //       error.response?.data?.message || error.message || "Unknown error"
-  //     );
-  //     alert("Failed to delete news. Please try again.");
-  //   }
-  // };
+      fetchAllImage();
+    } catch (error) {
+      console.error(
+        "Error deleting news:",
+        error.response?.data?.message || error.message || "Unknown error"
+      );
+      alert("Failed to delete news. Please try again.");
+    }
+  };
 
   const handleEditImage = async () => {
     if (selectedImage.id && editData.title && editData.file) {
@@ -357,16 +356,18 @@ const Gallery = () => {
                   Edit
                 </Button>
 
-                {/* <Button
-                  startIcon={<DeleteIcon />}
-                  variant="contained"
-                  sx={{ backgroundColor: "red", marginLeft: "5px" }}
-                  onClick={() => {
-                    handleDelete(image);
-                  }}
-                >
-                  DELETE
-                </Button> */}
+                {role === "admin" && (
+                  <Button
+                    startIcon={<DeleteIcon />}
+                    variant="contained"
+                    sx={{ backgroundColor: "red", marginLeft: "5px" }}
+                    onClick={() => {
+                      handleDelete(image);
+                    }}
+                  >
+                    DELETE
+                  </Button>
+                )}
               </ListItemSecondaryAction>
             </ListItem>
           ))}
