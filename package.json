@@ -12,10 +12,11 @@
     "@mui/x-date-pickers": "^7.27.0",
     "@reduxjs/toolkit": "^2.5.0",
     "axios": "^1.7.9",
+    "browser-image-compression": "^2.0.2",
     "cra-template": "1.2.0",
     "dayjs": "^1.11.13",
-    "jodit-react": "^5.2.15",
     "html2canvas": "^1.4.1",
+    "jodit-react": "^5.2.15",
     "jspdf": "^3.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -51,5 +52,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   }
 }

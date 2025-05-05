@@ -23,10 +23,11 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import { Edit } from "@mui/icons-material";
-// import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteIcon from "@mui/icons-material/Delete";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
+import { PROD } from "../../assets/BaseUrl";
 import axios from "axios";
 
 const GETAPI = `${baseURL}api/v1/events`;
@@ -70,6 +71,7 @@ const Event = () => {
 
   const user = useSelector((store) => store.auth);
   const token = user?.user?.data?.token;
+  const role = user?.user?.data?.role;
 
   //Fetch All Events
   const fetchAllEvent = async () => {
@@ -240,39 +242,39 @@ const Event = () => {
 
   // **************** Handle Delete ***************
 
-  // const handleDelete = async (event) => {
-  //   if (!event?.id) {
-  //     console.error("Invalid event object: Missing ID");
-  //     return;
-  //   }
+  const handleDelete = async (event) => {
+    if (!event?.id) {
+      console.error("Invalid event object: Missing ID");
+      return;
+    }
 
-  //   if (!token) {
-  //     console.error("Authorization token is missing!");
-  //     return;
-  //   }
+    if (!token) {
+      console.error("Authorization token is missing!");
+      return;
+    }
 
-  //   // Show confirmation alert
-  //   const isConfirmed = window.confirm(
-  //     `Are you sure you want to delete this event?`
-  //   );
-  //   if (!isConfirmed) {
-  //     console.log("Delete action canceled.");
-  //     return;
-  //   }
+    // Show confirmation alert
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete this event?`
+    );
+    if (!isConfirmed) {
+      console.log("Delete action canceled.");
+      return;
+    }
 
-  //   try {
-  //     await axios.delete(`${DELETEAPI}/${event.id}`, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
-  //     fetchAllEvent();
-  //   } catch (error) {
-  //     console.error(
-  //       "Error deleting Event:",
-  //       error.response?.data?.message || error.message || "Unknown error"
-  //     );
-  //     alert("Failed to delete event. Please try again.");
-  //   }
-  // };
+    try {
+      await axios.delete(`${DELETEAPI}/${event.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchAllEvent();
+    } catch (error) {
+      console.error(
+        "Error deleting Event:",
+        error.response?.data?.message || error.message || "Unknown error"
+      );
+      alert("Failed to delete event. Please try again.");
+    }
+  };
 
   // Handle View
   const handleView = (event) => {
@@ -323,8 +325,10 @@ const Event = () => {
 
   // Toggle Active/Inactive
   const toggleActiveStatus = async (event) => {
-    if (event.toggle === "0") {
-      await postNotifiction(event);
+    if (PROD) {
+      if (event.toggle === "0") {
+        await postNotifiction(event);
+      }
     }
     const eventDate = event?.toggle === "0" ? "1" : "0"; // Determine new status
 
@@ -442,12 +446,20 @@ const Event = () => {
                     <TableCell>{event.eventStartTime}</TableCell>
                     <TableCell>{event.eventEndTime}</TableCell>
                     <TableCell>
-                      <Switch
-                        checked={event?.toggle === "1"}
-                        onChange={() => toggleActiveStatus(event)}
-                        color="primary"
-                      />
-                      {event.isActive ? "Active" : "Inactive"}
+                      {role === "admin" && (
+                        <Switch
+                          checked={event?.toggle === "1"}
+                          onChange={() => toggleActiveStatus(event)}
+                          color="primary"
+                        />
+                      )}
+                      <span
+                        style={{
+                          color: event.toggle === "1" ? "#1686b8" : "red",
+                        }}
+                      >
+                        {event.toggle === "1" ? "Active" : "Inactive"}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleEdit(event)}>
@@ -463,6 +475,20 @@ const Event = () => {
                           Edit
                         </Button>
                       </IconButton>
+
+                      {role === "admin" && (
+                        <Button
+                          startIcon={<DeleteIcon />}
+                          variant="contained"
+                          sx={{ backgroundColor: "red" }}
+                          onClick={() => {
+                            handleDelete(event);
+                          }}
+                        >
+                          DELETE
+                        </Button>
+                      )}
+
                       <Button
                         variant="contained"
                         sx={{ marginLeft: 1 }}
@@ -470,16 +496,6 @@ const Event = () => {
                       >
                         View
                       </Button>
-                      {/* <Button
-                        startIcon={<DeleteIcon />}
-                        variant="contained"
-                        sx={{ backgroundColor: "red" }}
-                        onClick={() => {
-                          handleDelete(event);
-                        }}
-                      >
-                        DELETE
-                      </Button> */}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -542,7 +558,6 @@ const Event = () => {
             sx={{ marginBottom: 2 }}
           />
 
-          
 
           <Button variant="contained" component="label">
             Upload image

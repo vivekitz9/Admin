@@ -35,7 +35,7 @@ const SideMenu = () => {
     window.location.href = "/login";
   };
 
-  const navItems = [
+  let navItems = [
     { text: "Home", icon: <HomeIcon />, path: "/" },
     { text: "View Users", icon: <PeopleIcon />, path: "all-users" },
     {
@@ -65,7 +65,7 @@ const SideMenu = () => {
     },
   ];
 
-  const navItemsForSubadmin = [
+  const newsNavbar = [
     { text: "Home", icon: <HomeIcon />, path: "/" },
     { text: "News", icon: <AnnouncementIcon />, path: "news" },
     {
@@ -75,37 +75,67 @@ const SideMenu = () => {
     },
   ];
 
+  const blogNavbar = [
+    { text: "Home", icon: <HomeIcon />, path: "/" },
+    { text: "Blogs", icon: <ArticleIcon />, path: "blogs" },
+    {
+      text: "Log Out",
+      icon: <ExitToAppIcon />,
+      action: logout,
+    },
+  ];
+
+  const eventNavbar = [
+    { text: "Home", icon: <HomeIcon />, path: "/" },
+    { text: "Events", icon: <EventIcon />, path: "events" },
+    {
+      text: "Log Out",
+      icon: <ExitToAppIcon />,
+      action: logout,
+    },
+  ];
+
+  switch (role) {
+    case "news-subadmin":
+      navItems = newsNavbar;
+      break;
+    case "blog-subadmin":
+      navItems = blogNavbar;
+      break;
+    case "event-subadmin":
+      navItems = eventNavbar;
+      break;
+  }
+
   return (
     <Box sx={SideMenuStyle.sidemenuContainer}>
       <List sx={SideMenuStyle.list}>
-        {(role === "subadmin" ? navItemsForSubadmin : navItems).map(
-          (item, index) => (
-            <ListItem
-              key={index}
-              component={item.path ? NavLink : ""}
-              to={item.path ? item.path : undefined}
-              onClick={item.action ? item.action : undefined}
-              style={
-                item.path
-                  ? ({ isActive }) => ({
-                      textDecoration: "none",
-                      color: "inherit",
-                      display: "flex",
-                      alignItems: "center",
-                      width: "100%",
-                      background: isActive ? "#968860" : "#84764F",
-                    })
-                  : {}
-              }
-              sx={SideMenuStyle.listItem}
-            >
-              <ListItemAvatar>
-                <Avatar sx={SideMenuStyle.avatar}>{item.icon}</Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={item.text} sx={{ color: "white" }} />
-            </ListItem>
-          )
-        )}
+        {navItems.map((item, index) => (
+          <ListItem
+            key={index}
+            component={item.path ? NavLink : ""}
+            to={item.path ? item.path : undefined}
+            onClick={item.action ? item.action : undefined}
+            style={
+              item.path
+                ? ({ isActive }) => ({
+                    textDecoration: "none",
+                    color: "inherit",
+                    display: "flex",
+                    alignItems: "center",
+                    width: "100%",
+                    background: isActive ? "#968860" : "#84764F",
+                  })
+                : {}
+            }
+            sx={SideMenuStyle.listItem}
+          >
+            <ListItemAvatar>
+              <Avatar sx={SideMenuStyle.avatar}>{item.icon}</Avatar>
+            </ListItemAvatar>
+            <ListItemText primary={item.text} sx={{ color: "white" }} />
+          </ListItem>
+        ))}
       </List>
     </Box>
   );

@@ -18,11 +18,14 @@ import {
   Switch,
   TablePagination,
 } from "@mui/material";
+
 import { Edit } from "@mui/icons-material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-// import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useSelector } from "react-redux";
 import { baseURL } from "../../assets/BaseUrl";
+import { PROD } from "../../assets/BaseUrl";
+import imageCompression from "browser-image-compression";
 import axios from "axios";
 
 const GETAPI = `${baseURL}api/v1/admin/news`;
@@ -41,6 +44,7 @@ const News = () => {
     newsDate: "",
     file: null,
   });
+
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editData, setEditData] = useState({
     title: "",
@@ -48,6 +52,7 @@ const News = () => {
     newsDate: "",
     file: null,
   });
+
   const [selectedNews, setSelectedNews] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [page, setPage] = useState(0);
@@ -83,6 +88,7 @@ const News = () => {
           (a, b) => new Date(b?.newsDate) - new Date(a?.newsDate)
         ) || []
       ); // Extract users from API response
+      console.log(newsList);
     } catch (err) {
       console.log(err.response?.data?.message);
     }
@@ -122,8 +128,23 @@ const News = () => {
       formData.append("title", newNews.title);
       formData.append("description", newNews.description);
       formData.append("newsDate", newNews.newsDate);
+
+      const options = {
+        maxSizeMB: 2, // Set max size (in MB)
+        maxWidthOrHeight: 800, // Resize the image
+        useWebWorker: true,
+      };
+
+      const compressedFile = await imageCompression(newNews.file, options);
+
+      // if (PROD === false) {
+      //   if (newNews.file) {
+      //     formData.append("file", [compressedFile]);
+      //   }
+      // }
+
       if (newNews.file) {
-        formData.append("file", newNews.file);
+        formData.append("file", compressedFile);
       }
 
       try {
@@ -199,41 +220,41 @@ const News = () => {
 
   // ****************************  Delete News function  *********************************
 
-  // const handleDelete = async (news) => {
-  //   if (!news?.id) {
-  //     console.error("Invalid news object: Missing ID");
-  //     return;
-  //   }
+  const handleDelete = async (news) => {
+    if (!news?.id) {
+      console.error("Invalid news object: Missing ID");
+      return;
+    }
 
-  //   if (!token) {
-  //     console.error("Authorization token is missing!");
-  //     return;
-  //   }
+    if (!token) {
+      console.error("Authorization token is missing!");
+      return;
+    }
 
-  //   // Show confirmation alert
-  //   const isConfirmed = window.confirm(
-  //     `Are you sure you want to delete this news?`
-  //   );
-  //   if (!isConfirmed) {
-  //     console.log("Delete action canceled.");
-  //     return;
-  //   }
+    // Show confirmation alert
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete this news?`
+    );
+    if (!isConfirmed) {
+      console.log("Delete action canceled.");
+      return;
+    }
 
-  //   try {
-  //     await axios.delete(`${DELETEAPI}/${news.id}`, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
+    try {
+      await axios.delete(`${DELETEAPI}/${news.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-  //     alert(`News with ID ${news.id} deleted successfully.`); // Show success alert
-  //     fetchAllNews();
-  //   } catch (error) {
-  //     console.error(
-  //       "Error deleting news:",
-  //       error.response?.data?.message || error.message || "Unknown error"
-  //     );
-  //     alert("Failed to delete news. Please try again.");
-  //   }
-  // };
+      alert(`News with ID ${news.id} deleted successfully.`); // Show success alert
+      fetchAllNews();
+    } catch (error) {
+      console.error(
+        "Error deleting news:",
+        error.response?.data?.message || error.message || "Unknown error"
+      );
+      alert("Failed to delete news. Please try again.");
+    }
+  };
 
   // Handle View
   const handleView = (news) => {
@@ -284,14 +305,16 @@ const News = () => {
   };
 
   const toggleActiveStatus = async (news) => {
-    if (news.toggle === "0") {
-      await postNotifiction(news);
+    if (PROD) {
+      if (news.toggle === "0") {
+        await postNotifiction(news);
+      }
     }
 
     console.log("news Data  :  ", news);
 
     const newStatus = news.toggle === "0" ? "1" : "0"; // Determine new status
-    const newVisible = news.toggle === "0" ? "true" : "false"; // Determine new status
+    const newVisible = news.isVisible === false ? "true" : "false"; // Determine new status
 
     // console.log('newVisible------>', newVisible);
     const confirmation = window.confirm(
@@ -437,8 +460,6 @@ const News = () => {
                         />
                       )}
 
-                      {/* {news.toggle === "1" ? "Active" : "Inactive"} */}
-
                       <span
                         style={{
                           color: news.toggle === "1" ? "#1686b8" : "red",
@@ -461,6 +482,20 @@ const News = () => {
                           Edit
                         </Button>
                       </IconButton>
+
+                      {role === "admin" && (
+                        <Button
+                          startIcon={<DeleteIcon />}
+                          variant="contained"
+                          sx={{ backgroundColor: "red" }}
+                          onClick={() => {
+                            handleDelete(news);
+                          }}
+                        >
+                          DELETE
+                        </Button>
+                      )}
+
                       <Button
                         variant="contained"
                         sx={{ marginLeft: 1 }}
@@ -468,16 +503,6 @@ const News = () => {
                       >
                         View
                       </Button>
-                      {/* <Button
-                        startIcon={<DeleteIcon />}
-                        variant="contained"
-                        sx={{ backgroundColor: "red" }}
-                        onClick={() => {
-                          handleDelete(news);
-                        }}
-                      >
-                        DELETE
-                      </Button> */}
                     </TableCell>
                   </TableRow>
                 ))}
